@@ -1,0 +1,7 @@
+---
+- name: Install net-tools to get netstat
+  become: yes
+  yum:
+    name: net-tools
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="centos"

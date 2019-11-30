@@ -1,0 +1,30 @@
+body {
+   transform: scale(1.0);
+   transform-origin: top left;
+   font-size: 16px
+}
+input {
+    padding:3;
+    margin:0;
+    font-size: 9px
+}
+select {
+    padding:3;
+    margin:0;
+    font-size: 9px
+}
+.ndb {
+   transform: scale(0.9);
+   transform-origin: top left;
+   font-size: 16px
+}
+.custom_text_button {
+  font-size: 12px;
+  padding: 0.4em;
+  width: 100%;
+  #text-align: center;
+}
+.non_table_text_button {
+  font-size: 12px;
+  padding: 0.4em;
+}

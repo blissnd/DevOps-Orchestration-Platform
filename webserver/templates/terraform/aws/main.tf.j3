@@ -1,0 +1,85 @@
+provider "aws" {
+  region = "{<region>}"
+  shared_credentials_file = "{<credentials_path>}"
+}
+
+#resource "aws_default_vpc" "default_vpc" {
+#  cidr_block           = "10.0.1.0/24"
+#  enable_dns_hostnames = true
+#}
+
+resource "aws_default_vpc" "default_vpc" {
+ 
+}
+
+# Public Subnets
+resource "aws_default_subnet" "subnet-a" {
+  #vpc_id            = "${aws_default_vpc.default_vpc.id}"
+  #cidr_block        = "10.0.1.0/24"
+  availability_zone = "{<region>}{<AZ>}"
+}
+
+resource "aws_route_table" "subnet-route-table" {
+  vpc_id = "${aws_default_vpc.default_vpc.id}"
+}
+
+#resource "aws_internet_gateway" "igw" {
+#  vpc_id = "${aws_default_vpc.default_vpc.id}"
+#}
+
+#resource "aws_route" "subnet-route" {
+#  destination_cidr_block  = "0.0.0.0/0"
+#  gateway_id              = "${aws_internet_gateway.igw.id}"
+#  route_table_id          = "${aws_route_table.subnet-route-table.id}"
+#}
+
+#resource "aws_route_table_association" "subnet-a-route-table-association" {
+#  subnet_id      = "${aws_default_subnet.subnet-a.id}"
+#  route_table_id = "${aws_route_table.subnet-route-table.id}"
+#}
+
+#################################################
+
+# INSTANCES
+
+{<instance_section>}
+
+#################################################
+
+#resource "aws_default_security_group" "security-group" {
+ # vpc_id      = "${aws_default_vpc.default_vpc.id}"
+
+# {<firewall_section>}
+
+#  egress {
+#	   from_port   = 0
+# 	 to_port     = 0
+#   protocol    = "-1"
+#    cidr_blocks = ["0.0.0.0/0"]
+#  }
+#}
+
+resource "aws_key_pair" "vm_key" {
+  key_name   = "{<key_name>}"
+  public_key = "{<public_key>}"
+}
+
+#################################################
+
+output "public_dns" {
+  value = "${aws_instance.{<vm_name>}.public_dns}"
+}
+
+output "private_dns" {
+  value = "${aws_instance.{<vm_name>}.private_dns}"
+}
+
+output "public_ip_address" {
+  value = "${aws_instance.{<vm_name>}.public_ip}"
+}
+
+output "private_ip_address" {
+  value = "${aws_instance.{<vm_name>}.private_ip}"
+}
+
+#################################################

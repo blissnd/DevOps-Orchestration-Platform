@@ -1,0 +1,10 @@
+---
+- hosts:
+  - masters
+  remote_user: "{{ hostvars[inventory_hostname].username }}"
+  roles:
+    - { role: 'gnome_centos', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+    - { role: 'vnc_centos', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+
+    - { role: 'gnome_ubuntu', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }
+    - { role: 'vnc_ubuntu', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }

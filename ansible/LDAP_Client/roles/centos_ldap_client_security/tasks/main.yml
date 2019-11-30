@@ -1,0 +1,90 @@
+---
+######## LDAP ########
+
+- name: Secure  /etc/openldap/ldap.conf
+  become: yes
+  file:
+    path:  /etc/openldap/ldap.conf
+    mode: 0700
+    
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'uri ldap://{{ hostvars[inventory_hostname].server }}.*/'
+    line: "uri ldaps://{{ hostvars[inventory_hostname].server }}:636/"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: '^ssl '
+    line: "ssl yes"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'tls_reqcert allow'
+    line: "tls_reqcert allow"
+
+- name: configure /etc/openldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/openldap/ldap.conf
+    state: present
+    regexp: 'URI ldap.*'
+    line: "URI ldaps://{{ hostvars[inventory_hostname].server }}:636/"
+
+- name: configure /etc/openldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/openldap/ldap.conf
+    state: present
+    regexp: 'TLS_REQCERT allow'
+    line: "TLS_REQCERT allow"
+    
+- name: configure /etc/sysconfig/slapd
+  become: yes
+  lineinfile:  
+    path: /etc/sysconfig/slapd
+    state: present
+    regexp: 'SLAPD_URLS=.*'
+    line: "SLAPD_URLS=\"ldapi:/// ldap:/// ldaps:///\""
+
+### Restart everything
+
+- name: check autofs on
+  become: yes
+  shell: chkconfig autofs on
+
+- name: enable nscd
+  become: yes
+  service:
+    name: nscd
+    enabled: yes
+    state:  restarted
+
+- name: enable autofs
+  become: yes
+  service:
+    name: autofs
+    enabled: yes
+    state:  restarted
+
+- name: enable nslcd
+  become: yes
+  service:
+    name: nslcd
+    enabled: yes
+    state:  restarted
+
+- name: enable slapd
+  become: yes
+  service:
+    name: slapd
+    enabled: yes
+    state:  restarted

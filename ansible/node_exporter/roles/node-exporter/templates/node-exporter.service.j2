@@ -1,0 +1,14 @@
+[Unit]
+Description=node-exporter service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/apps/go/node_exporter
+ExecStart=/opt/apps/go/node_exporter/node_exporter
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target

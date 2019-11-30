@@ -1,0 +1,3 @@
+DISPLAY=:1
+
+/usr/bin/x11vnc -auth /run/user/118/gdm/Xauthority -forever -loop -noxdamage -repeat -rfbauth /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd -rfbport 5906 -shared 

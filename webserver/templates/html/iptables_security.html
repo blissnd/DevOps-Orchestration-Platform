@@ -1,0 +1,275 @@
+<html>
+<title>{{.Title}}</title>
+<h3>{{.Title}}</h3><BR>
+
+<script type="text/javascript">
+    var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    if (is_chrome) {
+      document.write('<link rel="stylesheet" href="/css/chrome.css" type="text/css" />');
+    } else {
+      document.write('<link rel="stylesheet" href="/css/firefox.css" type="text/css" />');
+    }
+</script>
+
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+<input id="platform_type" name="platform_type" type="hidden" value="{{.Cloud_Platform}}">
+<input id="instance_construction_type" name="instance_construction_type" type="hidden" value="{{.Instance_construction_type}}">
+
+<script>	
+	var selected_vm = {{.Selected_VM}}
+	var platform_type = {{.Cloud_Platform}}
+	var instance_construction_type = {{.Instance_construction_type}}		
+</script>
+
+
+<table id="top_table" border="1" padding="1">
+	<thead>
+  <tr>    
+		<th>IP CIDR Range</th>
+		<th>Protocol</th>
+		<th>Port</th>
+	</tr>
+	</thead>
+  
+ <tbody id="top_table_body">
+  </tbody>
+</table>
+
+<BR><BR><hr style="border-top: 1px solid #0000ff;">
+
+<div id="vm_info_section"></div>
+
+<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+<script src="/js/libs/jquery.min.js"></script>
+
+<script>
+    
+$(document).ready(function() {  
+
+  var current_id = 1	  
+  var html_row = ""
+  var vm_name = selected_vm
+  
+  html_row += "<tr id=\"vm_table_row\">"
+  html_row += "<form id=\"form_0\" action=\"/iptables_security/\" method=\"POST\">"
+  
+  html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"hidden\" name=\"vm_name\" value=\"" + selected_vm + "\" id=\"vm_name\">"
+	html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"hidden\" name=\"platform_type\" value=\"" + platform_type + "\" id=\"platform_type\">"
+  html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"hidden\" name=\"instance_construction_type\" value=\"" + instance_construction_type + "\" id=\"instance_construction_type\">"
+
+  html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"hidden\" name=\"state\" value=\"CLOSED\" id=\"state\"" + current_id + "\">"
+
+  html_row += "<td>"
+  html_row += "<input class=\"custom_text_button\" form=\"form_0\" type=\"text\" placeholder=\"IP CIDR Range\" name=\"source_cidr\" value=\"0.0.0.0/0\" required>"
+  html_row += "</td>"
+  
+  html_row += "<td>"
+  html_row += "<input class=\"custom_text_button\" form=\"form_0\" type=\"text\" placeholder=\"Enter Protocol\" name=\"protocol\" required>"
+  html_row += "</td>"
+
+  html_row += "<td>"
+  html_row += "<input class=\"custom_text_button\" form=\"form_0\" type=\"text\" placeholder=\"Enter Port\" name=\"port\" required>"
+  html_row += "</td>"
+  
+  html_row += "<td>"
+  html_row += "<input class=\"custom_text_button\" form=\"form_0\" type=\"submit\" name=\"Add Rule\" value=\"Add Rule\">"
+  html_row += "</td>"
+  
+  html_row += "</form>"
+  html_row += "</tr>"
+
+  $('#top_table_body').append(html_row);
+                           
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   
+  var html_row = ""        
+  
+  html_row += "<table id=\"info_table\" border=\"1\" padding=\"1\">"
+  html_row += "<thead>"
+  html_row += "<tr>"
+
+  html_row += "<th>IP CIDR Range</th>"
+  html_row += "<th>Protocol</th>"
+  html_row += "<th>Port</th>"
+
+  html_row += "</tr>"
+  html_row += "</thead>"
+  
+  html_row += "<tbody id=\"info_table_body\">"
+  html_row += "</tbody>"
+  html_row += "</table>"
+  
+  $('#vm_info_section').append(html_row);  
+  
+  get_info_tables_contents("get_iptables_security_map_ajax");            
+    
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+  
+  function get_info_tables_contents(ip_tables_security_map) {
+  
+    $.ajax({
+        url: '/' + ip_tables_security_map + '/',
+        type: 'post',
+        dataType: 'json',
+        //data : {log_path: log_path, log_position: current_log_position},
+        success : function(data) {
+          
+          var current_id = 1
+                    
+          $.each(data[selected_vm], function(firewall_rule_id, firewall_rule_map) {
+
+            var html_row = ""
+            
+            html_row += "<tr id=\"info_table_row_" + vm_name + "\">\n" 
+            
+            html_row += "<form id=\"form_" + current_id + "\" action=\"/iptables_security/\" target=\"\"  method=\"POST\">\n"
+                                            
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + vm_name + "\" id=\"vm_name_" + current_id + "\" name=\"vm_name\">"
+						html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" name=\"platform_type\" value=\"" + platform_type + "\" id=\"platform_type\">"
+						html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" name=\"instance_construction_type\" value=\"" + instance_construction_type + "\" id=\"instance_construction_type\">"
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_id + "\" id=\"firewall_rule_id_" + current_id + "\" name=\"firewall_rule_id\">"
+            
+            html_row += "<td>"
+            html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["source_cidr"] + "\" name=\"source_cidr_display\" disabled>"
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["source_cidr"] + "\" id=\"source_cidr_" + current_id + "\" name=\"source_cidr\">"
+            html_row += "</td>\n"
+            
+            html_row += "<td>"
+            html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["protocol"] + "\" name=\"protocol_display\" readonly>"
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["protocol"] + "\" id=\"protocol_" + current_id + "\" name=\"protocol\">"
+            html_row += "</td>\n"
+
+            html_row += "<td>"
+            html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["port"] + "\" name=\"port_display\" readonly>"
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["port"] + "\" id=\"port_" + current_id + "\" name=\"port\">"
+            html_row += "</td>\n"                                                               
+            
+            html_row += "<td id=\"button_iptables_td_" + current_id + "\" align=\"center\">"
+            
+            html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_iptables_" + current_id + "\" class=\"custom_text_button\"  name=\"button_iptables\" value=\"      " + firewall_rule_map["state"] + "      \">"
+
+            html_row += "<img id=\"iptables_wait_image_" + current_id + "\" src=\"/css/ajax-loader.gif\" />"
+            html_row += "<div id =\"iptables_error_indicator_" + current_id + "\"></div>"
+            html_row += "</td>\n"
+            
+            html_row += "<td>"            
+            html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_delete_" + current_id + "\" class=\"custom_text_button\" name=\"button_delete\"  value=\"Delete\" >"
+            html_row += "</td>\n"
+            
+            html_row += "<td>"
+            html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"{{.LogPath}}_" + vm_name + ".log\" id=\"log_path_" + current_id + "\" name=\"log_path\">"
+            html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\" type=\"submit\" id=\"button_log_" + current_id + "\" name=\"button_log\"  value=\"Get Log\" >"
+            html_row += "</td>\n"
+            
+            html_row += "</form>\n"
+            html_row += "</tr>\n"
+            
+            $('#info_table_body').append(html_row);
+            $("#iptables_wait_image_" + current_id).hide()
+            
+            ///////////////// 
+            
+            $("#button_iptables_" +  current_id).click(function(event) {
+            
+              var form_id = $(this).attr("form");
+              //document.getElementById(form_id).action = "/iptables_security/";
+              //document.getElementById(form_id).target = "";
+              //document.getElementById(form_id).submit();
+              
+              // AJAX Implementation
+              var row_id = form_id.substring(5)                  
+
+              $("#button_iptables_" + row_id).hide()
+              $("#iptables_wait_image_" + row_id).show()
+              
+              var vm_name = $("#vm_name_" + row_id).val()
+              var ip_address = $("#ip_address_info_" + row_id).val()
+              var source_cidr = $("#source_cidr_" + row_id).val()
+              var protocol = $("#protocol_" + row_id).val()
+              var port = $("#port_" + row_id).val()
+              var port_state = $("#button_iptables_" + row_id).val()
+              var log_path = $("#log_path_" + row_id).val()
+              
+              var webform_obj = {  vm_name: vm_name,
+                                    ip_address: ip_address,
+                                    source_cidr: source_cidr,
+                                    protocol: protocol,
+                                    port: port,
+                                    log_path: log_path,
+                                    firewall_type: "iptables",
+                                    platform_type: platform_type,
+                                    instance_construction_type: instance_construction_type,
+                                    port_state: port_state.trim()
+                                 };
+              
+              var webform_json = JSON.stringify(webform_obj)
+              
+              $.ajax({
+                url: '/ajax_modify_iptables_firewall/',
+                type: 'post',
+                dataType: 'json',
+                data : webform_obj,
+                
+                success : function(data) {
+                  
+                  $("#button_iptables_" + row_id).show()
+                  $("#iptables_wait_image_" + row_id).hide()
+                  
+                  if (data["result"] == "pass") {
+                    if ($("#button_iptables_" + row_id).val().trim() == "CLOSED") {
+                      $("#button_iptables_" + row_id).val("     OPEN     ")
+                    } else {
+                      $("#button_iptables_" + row_id).val("   CLOSED   ")
+                    }
+                    $("#button_iptables_td_" + row_id).attr("bgcolor", "#FFFFFF");
+                                                                    
+                  } else {
+                    $("#button_iptables_td_" + row_id).attr("bgcolor", "#FF0000");
+                  }
+                  
+                  event.preventDefault();
+                }
+              });
+              
+              event.preventDefault();
+            });
+            
+            ///////////////////////////////////////                
+            
+            $("#button_delete_" +  current_id).click(function(event) {
+
+            	var form_id = $(this).attr("form");              
+              var row_id = form_id.substring(5)      
+
+            	var port_state = $("#button_iptables_" + row_id).val().trim()
+							
+							//if (port_state == "OPEN") {
+							//	event.preventDefault();
+							//} else {
+	              var form_id = $(this).attr("form");
+	              document.getElementById(form_id).action = "/iptables_security/";
+	              document.getElementById(form_id).target = ""; 
+	              document.getElementById(form_id).submit();
+            	//}
+            });
+            
+            $("#button_log_" +  current_id).click(function() {
+            	event.preventDefault();
+            	
+              var form_id = $(this).attr("form");
+              document.getElementById(form_id).action = "/get_generic_security_log/";
+              document.getElementById(form_id).target = "_blank"; 
+              document.getElementById(form_id).submit();
+            });
+            
+            current_id += 1
+          });          
+        },
+    }); 
+  }	
+});
+
+</script>
+
+</html>

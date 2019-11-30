@@ -1,0 +1,150 @@
+---
+  
+- name: install apt-transport-https
+  become:   yes
+  apt:
+    name=apt-transport-https
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: install ca-certificates
+  become:   yes
+  apt:
+    name=ca-certificates
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: install curl
+  become:   yes
+  apt:
+    name=curl
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: install software-properties-common
+  become:   yes
+  apt:
+    name=software-properties-common
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: Add GPG key
+  become:   yes
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: store output of lsb_release
+  become:   yes
+  shell:  lsb_release -cs
+  register: lsb_release_output
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+#- name: test print var
+# shell:  echo {{lsb_release_output.stdout}} > output.txt
+
+#- name: test grep & awk
+#  become:   yes
+#  shell:  ls -l | grep domain.key | awk '{print $8}'
+#  register: shell_output
+  
+#- debug:  msg={{shell_output.stdout}}
+
+#- name: test print 2nd var
+#  shell:  echo {{shell_output.stdout}} > output2.txt
+
+- name: add correct apt repo
+  become: yes
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{lsb_release_output.stdout}} stable
+    state: present
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: install docker-ce
+  become:   yes
+  apt:
+    name=docker-ce
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: install java
+  become:   yes
+  apt:
+    name=openjdk-8-jdk-headless
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+#################### RedHat #########################
+
+- name: install yum-utils
+  become: yes
+  yum:
+    name: yum-utils
+    state: latest
+  when:
+     hostvars[inventory_hostname].os_name == "centos"
+
+- name: install device-mapper-persistent-data
+  become: yes
+  yum:
+    name: device-mapper-persistent-data
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: install lvm2
+  become: yes
+  yum:
+    name: lvm2
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Add docker repo
+  become: yes
+  shell: |
+    yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: install docker
+  become: yes
+  yum:
+    name: docker-ce
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: install java
+  become: yes
+  yum:
+    name: java
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+      
+####################################################
+
+- name: Ensure docker daemon is running
+  become: yes
+  service:
+    name: docker
+    state: started

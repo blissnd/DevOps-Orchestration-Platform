@@ -1,0 +1,12 @@
+[ubuntu_masters]
+192.168.2.10
+
+[ubuntu_agents]
+192.168.2.20
+
+[centos_masters]
+192.168.3.10
+
+[centos_agents]
+192.168.3.20
+

@@ -1,0 +1,159 @@
+---
+
+####### Apache ########
+
+- name: Generate self-signed cert
+  become: yes
+  shell: "openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem -subj \"/C=uk/ST=test/L=test/O=test/CN={{ hostvars[inventory_hostname].fqdn }}\""
+  args:
+    chdir: /etc/httpd/conf.d
+    
+- name: install mod_ssl
+  become: yes
+  yum:
+    name: mod_ssl
+    state: latest
+
+- name: configure apache for tls
+  become: yes
+  lineinfile:  
+    path: /etc/httpd/conf.d/phpldapadmin.conf
+    state: present
+    regexp: 'SSLEngine on'
+    line: "SSLEngine on"
+
+- name: configure apache for tls
+  become: yes
+  lineinfile:  
+    path: /etc/httpd/conf.d/phpldapadmin.conf
+    state: present
+    regexp: 'SSLCertificateFile \"/etc/httpd/conf.d/certificate.pem\"'
+    line: "SSLCertificateFile \"/etc/httpd/conf.d/certificate.pem\""
+    
+- name: configure apache for tls
+  become: yes
+  lineinfile:  
+    path: /etc/httpd/conf.d/phpldapadmin.conf
+    state: present
+    regexp: 'SSLCertificateKeyFile \"/etc/httpd/conf.d/key.pem\"'
+    line: "SSLCertificateKeyFile \"/etc/httpd/conf.d/key.pem\""
+
+- name: enable httpd
+  become: yes
+  service:
+    name: httpd
+    enabled: yes
+    state:  restarted
+
+######## LDAP ########
+
+- name: Secure  /etc/openldap/ldap.conf
+  become: yes
+  file:
+    path:  /etc/openldap/ldap.conf
+    mode: 0700
+
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  replace:  
+    path: /etc/phpldapadmin/config.php
+    regexp: '^\$servers.*setValue\(''login'',''bind_id'',''.*\);'
+    replace: "$servers->setValue('login','bind_id','cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}');"
+    
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: 'servers.*setValue\(''server'',''host'',''127.0.0.1''\);'
+    line: "$servers->setValue('server','host','ldaps://127.0.0.1:636');"
+    
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  lineinfile:
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: 'servers.*setValue\(''server'',''port'',389\);'
+    line: "$servers->setValue('server','port',0);"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'uri ldap://{{ hostvars[inventory_hostname].ip_address }}.*/'
+    line: "uri ldaps://{{ hostvars[inventory_hostname].ip_address }}:636/"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: '^ssl '
+    line: "ssl yes"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'tls_reqcert allow'
+    line: "tls_reqcert allow"
+
+- name: configure /etc/openldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/openldap/ldap.conf
+    state: present
+    regexp: 'URI ldap.*'
+    line: "URI ldaps://{{ hostvars[inventory_hostname].ip_address }}:636/"
+
+- name: configure /etc/openldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/openldap/ldap.conf
+    state: present
+    regexp: 'TLS_REQCERT allow'
+    line: "TLS_REQCERT allow"
+    
+- name: configure /etc/sysconfig/slapd
+  become: yes
+  lineinfile:  
+    path: /etc/sysconfig/slapd
+    state: present
+    regexp: 'SLAPD_URLS=.*'
+    line: "SLAPD_URLS=\"ldapi:/// ldap:/// ldaps:///\""
+
+### Restart everything
+
+- name: check autofs on
+  become: yes
+  shell: chkconfig autofs on
+
+- name: enable nscd
+  become: yes
+  service:
+    name: nscd
+    enabled: yes
+    state:  restarted
+
+- name: enable autofs
+  become: yes
+  service:
+    name: autofs
+    enabled: yes
+    state:  restarted
+
+- name: enable nslcd
+  become: yes
+  service:
+    name: nslcd
+    enabled: yes
+    state:  restarted
+
+- name: enable slapd
+  become: yes
+  service:
+    name: slapd
+    enabled: yes
+    state:  restarted

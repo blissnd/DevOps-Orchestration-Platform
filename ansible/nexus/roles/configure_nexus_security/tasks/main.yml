@@ -1,0 +1,90 @@
+---
+### Generate java keystore for HTTPS ###
+
+- name: create nexus_security directory
+  become: yes
+  file:
+    path: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security"
+    state: directory
+    mode: 0755
+
+- name: Generate self-signed cert
+  become: yes
+  shell: "openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem -subj \"/C=uk/ST=test/L=test/O=test/CN={{hostvars[inventory_hostname].nexus_registry_dns }}\""
+  args:
+    chdir: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security"
+
+- name: Convert certificate to java-ready format
+  become: yes
+  shell: "openssl pkcs12 -export -in certificate.pem -inkey key.pem -name {{hostvars[inventory_hostname].nexus_registry_dns }} -out pkcs-12.p12 -passout pass:changeit"
+  args:
+    chdir: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security"
+
+- name: Delete keystore if already exists
+  become: yes
+  file:
+    path: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security/nexus_keystore.jks"
+    state: absent
+        
+- name: Import key into java keystore
+  become: yes
+  shell: "keytool -importkeystore -deststorepass changeit -destkeystore nexus_keystore.jks -srcstorepass changeit -srckeystore pkcs-12.p12 -srcstoretype PKCS12"
+  args:
+    chdir: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security"
+
+- name: copy keystore to target location
+  become: yes
+  copy:
+    src: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security/nexus_keystore.jks"
+    dest: /opt/nexus/nexus3/etc/ssl
+    remote_src: yes
+
+### Start & stop nexus to create new directories needed for security config
+
+- name: Start Nexus
+  become: yes
+  shell: /opt/nexus/nexus3/bin/nexus start
+
+ ### Pause for 180 seconds to give nexus a chance to boot up ###
+- pause:
+    seconds: 180
+
+- name: Stop Nexus
+  become: yes
+  shell: /opt/nexus/nexus3/bin/nexus stop
+
+################
+
+- name: modify /opt/nexus/sonatype-work/nexus3/etc/nexus.properties
+  become: yes
+  lineinfile:
+    path: /opt/nexus/sonatype-work/nexus3/etc/nexus.properties
+    regexp: 'application-port-ssl=8443'
+    line: 'application-port-ssl=8443'
+    backup: yes
+    
+- name: modify /opt/nexus/sonatype-work/nexus3/etc/nexus.properties
+  become: yes
+  lineinfile:
+    path: /opt/nexus/sonatype-work/nexus3/etc/nexus.properties
+    regexp: 'nexus-args=.*'
+    line: 'nexus-args=${jetty.etc}/jetty.xml,${jetty.etc}/jetty-http.xml,${jetty.etc}/jetty-https.xml,${jetty.etc}/jetty-requestlog.xml'
+    backup: yes
+
+- name: modify /opt/nexus/nexus3/etc/jetty/jetty-https.xml
+  become: yes
+  replace:
+    path: /opt/nexus/nexus3/etc/jetty/jetty-https.xml
+    regexp: '/keystore.jks'
+    replace: '/nexus_keystore.jks'
+    backup: yes
+
+- name: modify /opt/nexus/nexus3/etc/jetty/jetty-https.xml
+  become: yes
+  replace:
+    path: /opt/nexus/nexus3/etc/jetty/jetty-https.xml
+    regexp: 'password'
+    replace: 'changeit'
+    backup: yes
+
+

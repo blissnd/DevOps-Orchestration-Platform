@@ -1,0 +1,2 @@
+GCE_PARAMS = ('{<gcp_service_account_email>}', './gcp_credentials.json')
+GCE_KEYWORD_PARAMS = {'project': '{<gcp_project_id>}', 'datacenter': ''}

@@ -1,0 +1,10 @@
+---
+-   hosts:
+    - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:
+      #- configure_ubuntu_vm1_host_adapter_network
+      - ssh_config
+      - bashrc
+      - ssh_private_key_distribution
+

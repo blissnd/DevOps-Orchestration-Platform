@@ -1,0 +1,248 @@
+<html>
+<title>{{.Title}}</title>
+<h3 style="color:green;">{{.Cloud_Platform}} => {{.Instance_construction_type}} => {{.Selected_VM}} => Docker Containers</h3>
+
+<script type="text/javascript">
+    var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    if (is_chrome) {
+      document.write('<link rel="stylesheet" href="/css/chrome.css" type="text/css" />');
+    } else {
+      document.write('<link rel="stylesheet" href="/css/firefox.css" type="text/css" />');
+    }
+</script>
+
+<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+<script src="/js/libs/jquery.min.js"></script>
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+<input id="cloud_platform" name="selected_vm" type="hidden" value="{{.Cloud_Platform}}">
+<input id="instance_construction_type" name="selected_vm" type="hidden" value="{{.Instance_construction_type}}">
+
+<script>
+	var show_ssh = {{.Show_SSH}};
+	var selected_vm = {{.Selected_VM}}
+	var cloud_platform = {{.Cloud_Platform}}
+	var instance_construction_type = {{.Instance_construction_type}}		
+</script>
+
+<table id="docker_table" border="1" padding="1" table-layout="fixed">
+	<thead>
+  <tr>
+		<th>VM Name</th>
+		<th>Container Name</th>
+      <th>Port Mapping
+        <a id= "button_add_port" href="">[+]</a>
+      </th>
+      <th>Volume Mapping
+        <a id= "button_add_volume" href="">[+]</a>
+      </th>
+		<th>O/S</th>
+		<th>Local Registry Image Name</th>		
+	</tr>
+	</thead>
+  
+  <tbody id="docker_table_body">
+	<tr id="vm_table_row">
+			<form id="form_0" action="/docker/" method="POST">
+				<td id="vm_name_field">
+            <input form="form_0" class="custom_text_button" type="text" name="vm_name" value="{{.Selected_VM}}" disabled>
+            <input form="form_0" type="hidden" name="vm_name" value="{{.Selected_VM}}">
+            <input form="form_0" type="hidden" name="platform_type" value="{{.Cloud_Platform}}">
+            <input form="form_0" type="hidden" name="instance_construction_type" value="{{.Instance_construction_type}}">
+            <input form="form_0" type="hidden" name="docker" value="docker">
+				</td>
+				<td>
+						<input form="form_0" class="custom_text_button" type="text" placeholder="Enter Container Name" name="docker_container_name" required>
+				</td>
+        <td>
+        	<table border="0" padding="0" id="port_mapping_table"><tbody>      	
+          	<tr>
+							<td><input form="form_0" class="custom_text_button" type="text" placeholder="Internal Port" name="internal_port_0" value="22" disabled></td>
+							<td><input form="form_0" class="custom_text_button" type="text" placeholder="External Port" name="external_port_0" required></td>
+						</tr>
+					</tbody></table>
+				</td>
+				<td>
+          <table border="0" padding="0" id="volume_mapping_table"><tbody></tbody></table>
+				</td>
+				<td>
+					<select class="custom_dropdown" form="form_0" name="OS">
+						<option value="centos/7">Centos 7</option>
+						<option value="ubuntu/xenial64">Ubuntu 16</option>
+					</select>
+				</td>
+				<td>
+						<input form="form_0" class="custom_text_button" type="text" size="45" placeholder="Enter Registry Image Name" name="image_name" required>
+				</td>
+				<td>
+					<input form="form_0" class="custom_text_button" type="submit" name="button_add_docker" value="Add Docker Container">
+				</td>				
+				
+			</form>
+	</tr>	
+  </tbody>
+</table>
+
+<BR><BR><BR><BR>
+
+<table id="ansible_table" border="1" padding="1">
+	<thead>
+  <tr>
+		<th>Docker Container</th>
+		<th>IP Address</th>
+		<th>O/S</th>
+		<th>Image</th>
+    <th colspan="4">Container Action</th>    
+	</tr>
+	</thead>
+  
+  <tbody id="table_body">
+  </tbody>
+</table>
+
+<script>    
+  
+	$(document).ready(function() {
+		
+		var port_row_counter = 1;
+  	var volume_row_counter = 0;
+
+    $("#button_add_port").click(function() {		  
+		  
+		  var new_row = "<tr><td><input form=\"form_0\" type=\"text\" class=\"custom_text_button\" placeholder=\"Internal Port\" name=\"internal_port_" + port_row_counter + "\" required></td>";
+		  new_row += "<td><input form=\"form_0\" type=\"text\" class=\"custom_text_button\" placeholder=\"External Port\" name=\"external_port_" + port_row_counter + "\" required></td></tr>"
+		  
+		  $('#port_mapping_table > tbody > tr:last-child').after(new_row);
+		   
+      port_row_counter++;
+      return false;
+    });
+    
+    $("#button_add_volume").click(function() {
+
+    	var new_row = "<tr><td><input form=\"form_0\" type=\"text\" class=\"custom_text_button\" placeholder=\"Internal Volume\" name=\"internal_volume_" + volume_row_counter + "\" required></td>";
+    	new_row +="<td><input form=\"form_0\" type=\"text\" class=\"custom_text_button\" placeholder=\"External Volume\" name=\"external_volume_" + volume_row_counter + "\" required></td></tr>";
+
+    	var html_selector = ""    	
+
+    	if (volume_row_counter == 0) {
+    		html_selector = "#volume_mapping_table > tbody";
+    		$(html_selector).append(new_row);
+    	} else {
+    		html_selector = "#volume_mapping_table > tbody > tr:last-child";
+    		$(html_selector).after(new_row);
+    	}
+
+    	
+      
+      volume_row_counter++;
+      return false;
+    });
+    
+    $.ajax({
+				url: '/get_docker_map/',
+				type: 'post',
+				dataType: 'json',
+				//data : {log_path: log_path, log_position: current_log_position},
+				success : function(data) {
+        
+          var current_id = 1          
+          
+					$.each(data, function(docker_name, docker_map) {
+            if (docker_map["vm_name"] == selected_vm) {
+            
+              var html_row = "<tr>"
+                         
+              html_row += "<form id=\"form_" + current_id + "\" action=\"/ansible/docker/run_ansible/\" target=\"_blank\"  method=\"POST\">\n"
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" id=\"button_select_container_" + current_id + "\" class=\"custom_text_button\" type=\"submit\" value=\"" + docker_map["docker_container_name"] + "\" name=\"button_select_container\">"                                         
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + docker_map["docker_container_name"] + "\" name=\"docker_container_name\">"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" +selected_vm + "\" name=\"vm_name\">"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"{{.Cloud_Platform}}\" name=\"platform_type\">"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"{{.Instance_construction_type}}\" name=\"instance_construction_type\">"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"docker\" name=\"button_docker\">"
+              html_row += "</td>\n"
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"text\" class=\"custom_text_button\" value=\"" + docker_map["ip_address"] + "\" name=\"ip_address_display\" disabled>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + docker_map["ip_address"] + "\" name=\"ip_address\">"
+              html_row += "</td>\n"
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\" type=\"text\" value=\"" + docker_map["OS"] + "\" name=\"OS_display\" disabled>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + docker_map["OS"] + "\" name=\"OS\">"
+              html_row += "</td>\n"
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\" type=\"text\" value=\"" + docker_map["image_name"] + "\" name=\"image_display\" disabled>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + docker_map["image_name"] + "\" name=\"image\">"
+              html_row += "</td>\n"
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_delete_" + current_id + "\" class=\"custom_text_button\" name=\"button_delete\"  value=\"Delete\" >"
+              html_row += "</td>\n"
+              
+              
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_launch_" + current_id + "\" class=\"custom_text_button\" name=\"button_launch\" value=\"Launch New Container\" >"
+              html_row += "<BR>\n"
+              html_row += "</td>\n"
+
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_image_launch_" + current_id + "\" class=\"custom_text_button\" name=\"button_image_launch\" value=\"Launch Container from Image\" >"
+              html_row += "</td>\n"                                              
+              
+              html_row += "<td>"
+              html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" name=\"button_commit_to_image\" id=\"button_commit_to_image_" + current_id + "\" class=\"custom_text_button\" value=\"Commit to Nexus Registry\">"
+              html_row += "</td>\n"
+              
+              html_row += "</form>\n"
+              html_row += "</tr>\n"
+              
+              $('#table_body').append(html_row);
+            
+              $("#button_launch_" +  current_id).click(function() {
+                var form_id = $(this).attr("form");
+                document.getElementById(form_id).action = "/configure/create_docker/";
+                document.getElementById(form_id).submit();
+              });
+              
+              $("#button_image_launch_" +  current_id).click(function() {
+                var form_id = $(this).attr("form");
+                document.getElementById(form_id).action = "/configure/create_docker_from_image/";
+                document.getElementById(form_id).submit();
+              });
+              
+              $("#button_commit_to_image_" +  current_id).click(function() {
+                var form_id = $(this).attr("form");
+                document.getElementById(form_id).action = "/configure/docker_commit/";
+                document.getElementById(form_id).submit();
+              });         
+              
+              $("#button_delete_" +  current_id).click(function() {
+                var form_id = $(this).attr("form");
+                document.getElementById(form_id).action = "/docker/";
+                document.getElementById(form_id).target = ""; 
+                document.getElementById(form_id).submit();
+              });                            
+              
+              $("#button_select_container_" +  current_id).click(function() {
+                var form_id = $(this).attr("form");
+                document.getElementById(form_id).action = "/specific_vm/";
+                document.getElementById(form_id).target = ""; 
+                document.getElementById(form_id).submit();
+              });              
+            
+              current_id += 1
+            }
+          });
+				},
+    }); 
+    
+	});
+  
+</script>
+
+</html>

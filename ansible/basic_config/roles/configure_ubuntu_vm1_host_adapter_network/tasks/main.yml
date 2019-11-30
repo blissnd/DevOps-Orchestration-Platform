@@ -1,0 +1,8 @@
+---
+- name: Copy debian static network config file
+  become: yes
+
+  template:
+    src:	10-host-adapter-init.cfg.j2
+    dest:	/etc/network/interfaces.d/10-host-adapter-init.cfg
+

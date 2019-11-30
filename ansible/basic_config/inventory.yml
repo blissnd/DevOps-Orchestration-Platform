@@ -1,0 +1,10 @@
+masters:
+  hosts:
+    192.168.5.20:
+      ansible_ssh_private_key_file:  ../ssh_keys/ndb-test-vm/private_key
+  vars:
+    home_dir:  /home/vagrant
+    username:  vagrant
+    vm_name:  ndb-test-vm
+    ssh_private_key:  ../ssh_keys/ndb-test-vm/private_key
+    os_name:  centos

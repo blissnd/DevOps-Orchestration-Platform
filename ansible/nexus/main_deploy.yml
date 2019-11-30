@@ -1,0 +1,9 @@
+---
+-   hosts:
+    - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:
+      - install_nexus
+      - configure_nexus_security
+      - deploy_nexus
+      - pull_keys_back_to_local

@@ -1,0 +1,47 @@
+---
+- name: Create target directory
+  become: yes
+  file:
+    path: "{{ hostvars[inventory_hostname].home_dir }}/{{ hostvars[inventory_hostname].vm_name }}/{{ hostvars[inventory_hostname].container_name }}"
+    state: directory
+    mode: 0755
+    
+- name: Copy authorized_keys to VM
+  become: yes
+  copy:  
+    src: "../../../../../docker/{{ hostvars[inventory_hostname].os_name }}/authorized_keys"
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/{{ hostvars[inventory_hostname].vm_name }}/{{ hostvars[inventory_hostname].container_name }}/authorized_keys"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: Copy docker_bootstrap_script.sh to VM
+  become: yes
+  copy:  
+    src: "../../../../../docker/{{ hostvars[inventory_hostname].os_name }}/docker_bootstrap_script.sh"
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/{{ hostvars[inventory_hostname].vm_name }}/{{ hostvars[inventory_hostname].container_name }}/docker_bootstrap_script.sh"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: Copy docker_run.sh to VM
+  become: yes
+  copy:  
+    src: "../../../../../docker/{{ hostvars[inventory_hostname].os_name }}/docker_run.sh"
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/{{ hostvars[inventory_hostname].vm_name }}/{{ hostvars[inventory_hostname].container_name }}/docker_run.sh"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+##########################################################################################################
+
+- name: docker login
+  become: yes
+  shell: "docker login --username admin --password {{ hostvars[inventory_hostname].nexus_admin_password }} {{ hostvars[inventory_hostname].nexus_registry_dns }}:18444"
+  
+- name: Run docker run command
+  become: yes
+  shell:  ./docker_run.sh
+  args:
+    chdir:  "{{ hostvars[inventory_hostname].home_dir }}/{{ hostvars[inventory_hostname].vm_name }}/{{ hostvars[inventory_hostname].container_name }}/"
+

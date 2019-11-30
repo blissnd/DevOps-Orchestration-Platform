@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###
+
+iptables --policy INPUT ACCEPT
+
+###
+
+grep_result=$(sudo iptables -L INPUT | grep "ssh")
+
+if [ "$grep_result" == "" ]; then
+	iptables -A INPUT -p tcp --dport ssh -j ACCEPT
+fi
+
+###
+
+grep_result=$(sudo iptables -L INPUT | grep "ctstate RELATED,ESTABLISHED")
+
+if [ "$grep_result" == "" ]; then
+	sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+fi
+
+###
+
+iptables --policy INPUT DROP
+
+###

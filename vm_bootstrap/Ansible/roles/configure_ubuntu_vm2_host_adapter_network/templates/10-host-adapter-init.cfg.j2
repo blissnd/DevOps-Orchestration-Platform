@@ -1,0 +1,8 @@
+auto enp0s8
+iface enp0s8 inet static
+ address {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+ netmask 255.255.255.0
+ network 192.168.2.0
+ broadcast 192.168.2.255
+ gateway 192.168.2.1
+

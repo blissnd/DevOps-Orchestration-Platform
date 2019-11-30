@@ -1,0 +1,176 @@
+---
+
+- name: install slapd
+  become: yes
+  apt:
+    name: slapd
+    state: latest
+
+- name: install ldap-utils
+  become: yes
+  apt:
+    name: ldap-utils
+    state: latest
+
+- name: install libpam-ldap
+  become: yes
+  apt:
+    name: libpam-ldap
+    state: latest
+
+- name: install nscd
+  become: yes
+  apt:
+    name: nscd
+    state: latest
+    
+- name: install libnss-ldap
+  become: yes
+  apt:
+    name: libnss-ldap
+    state: latest
+
+- name: install autofs
+  become: yes
+  apt:
+    name: autofs
+    state: latest
+
+- name: install rpcbind
+  become: yes
+  apt:
+    name: rpcbind
+    state: latest
+
+- name: install nslcd
+  become: yes
+  apt:
+    name: nslcd
+    state: latest
+    
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'uri ldap.*'
+    line: "uri ldap://{{ hostvars[inventory_hostname].server }}:389/"
+    
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'base dc=.*'
+    line: "base {{ hostvars[inventory_hostname].ldap_dn }}"
+
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'binddn.*'
+    line: "binddn cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}"
+    
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'bindpw.*'
+    line: "bindpw admin"
+
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'passwd\:(.*)'
+    line: "passwd:     compat ldap"
+    
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'shadow\:(.*)'
+    line: "shadow:     compat ldap"
+    
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'group\:(.*)'
+    line: "group:     compat ldap"
+
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'automount\:.*'
+    line: "automount:  files ldap"
+    
+- name: Copy autofs bind parameters file across
+  become: yes
+  template:
+    src:  autofs.j2
+    dest: "/etc/default/autofs"
+    
+- name: Modify /etc/ldap.conf with ldap params
+  become: yes
+  lineinfile:  
+    path: /etc/ldap.conf
+    state: present
+    regexp: '.*base dc=example,dc=net'
+    line: "base {{ hostvars[inventory_hostname].ldap_dn }}"
+
+- name: Modify /etc/ldap.conf with ldap params
+  become: yes
+  lineinfile:  
+    path: /etc/ldap.conf
+    state: present
+    regexp: '.*binddn.*'
+    line: "binddn cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}"
+    
+- name: Modify /etc/ldap.conf with ldap params
+  become: yes
+  lineinfile:  
+    path: /etc/ldap.conf
+    state: present
+    regexp: '.*bindpw.*'
+    line: "bindpw admin"
+    
+### Fix /etc/pam.d/common-password ###
+
+- name: Admin of common-password
+  become: yes
+  replace:
+    path: /etc/pam.d/common-password
+    regexp: 'use_authtok'
+    replace: ''
+    backup: yes
+
+### Restart everything ###
+
+- name: enable nscd
+  become: yes
+  service:
+    name: nscd
+    enabled: yes
+    state:  restarted
+
+- name: enable autofs
+  become: yes
+  service:
+    name: autofs
+    enabled: yes
+    state:  restarted
+
+- name: enable nslcd
+  become: yes
+  service:
+    name: nslcd
+    enabled: yes
+    state:  restarted

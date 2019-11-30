@@ -1,0 +1,28 @@
+FROM centos:centos7
+
+RUN yum -y update
+RUN yum install -y sudo
+RUN sudo yum install -y python
+RUN sudo yum install -y openssh
+RUN sudo yum install -y openssh-server
+RUN sudo yum install -y openssh-clients
+RUN sudo yum install -y openssl-libs
+RUN sudo yum install -y net-tools
+
+RUN sudo useradd -ms /bin/bash {<user_id>}
+
+COPY ./authorized_keys /home/{<user_id>}/.ssh/
+COPY ./docker_bootstrap_script.sh	 /home/{<user_id>}/
+COPY ./myOverrides	 /etc/sudoers.d/
+
+RUN sudo chown {<user_id>}:{<user_id>} /home/{<user_id>}/.ssh/*
+
+RUN sudo ssh-keygen -t rsa1 -f ./ssh_host_key -N ""
+RUN sudo ssh-keygen -t dsa -f ./ssh_host_ecdsa_key -N ""
+RUN sudo ssh-keygen -t rsa -f ./ssh_host_rsa_key -N ""
+RUN sudo ssh-keygen -t ed25519 -f ./ssh_host_ed25519_key -N ""
+RUN sudo mv ./ssh_host_* /etc/ssh/
+
+#CMD ["sudo", "/usr/sbin/sshd"]
+
+WORKDIR /home/{<user_id>}

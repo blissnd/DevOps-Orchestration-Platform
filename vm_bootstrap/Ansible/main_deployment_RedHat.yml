@@ -1,0 +1,25 @@
+---
+-   hosts:
+    - centos_masters
+    vars_files:
+      - ./variable_definitions/host_vars_centos1.yml
+    remote_user: vagrant
+    roles:
+      #- configure_ubuntu_vm1_host_adapter_network
+      - ssh_config
+      - bashrc
+      - ssh_private_key_distribution
+      - docker_install
+###
+-   hosts:
+    - centos_agents
+    vars_files:
+      - ./variable_definitions/host_vars_centos2.yml
+    remote_user: vagrant
+    roles:
+      #- configure_ubuntu_vm2_host_adapter_network
+      - ssh_config
+      - bashrc
+      - ssh_private_key_distribution
+      - docker_install
+

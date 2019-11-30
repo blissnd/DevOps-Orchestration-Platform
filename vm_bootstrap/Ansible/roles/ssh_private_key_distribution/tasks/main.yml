@@ -1,0 +1,52 @@
+---
+-   name: distribute VM-1 private ssh key to VM
+    copy:  
+        src: ../.vagrant/machines/VM-1/virtualbox/private_key
+        dest: "{{ home_dir }}/.ssh/vm-1_priv_ssh_key"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0600
+
+-   name: distribute VM-2 private ssh key to VM
+    copy:  
+        src: ../.vagrant/machines/VM-2/virtualbox/private_key
+        dest: "{{ home_dir }}/.ssh/vm-2_priv_ssh_key"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0600
+
+- name: add private ssh keys to /etc/ssh/ssh_config in all VMs
+  become: yes
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    line: "IdentityFile ~/.ssh/vm-1_priv_ssh_key"
+    regexp: "vm-1_priv_ssh_key"
+    state:  present
+    insertafter:  EOF
+
+- name: add private ssh keys to /etc/ssh/ssh_config in all VMs
+  become: yes
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    line: "IdentityFile ~/.ssh/vm-2_priv_ssh_key"
+    regexp: "vm-2_priv_ssh_key"
+    state:  present
+    insertafter:  EOF
+
+- name: add private ssh keys to /etc/ssh/ssh_config in all VMs
+  become: yes
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    line: "IdentityFile ~/.ssh/vm-3_priv_ssh_key"
+    regexp: "vm-3_priv_ssh_key"
+    state:  present
+    insertafter:  EOF
+
+- name: add private ssh keys to /etc/ssh/ssh_config in all VMs
+  become: yes
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    line: "IdentityFile ~/.ssh/vm-4_priv_ssh_key"
+    regexp: "vm-4_priv_ssh_key"
+    state:  present
+    insertafter:  EOF

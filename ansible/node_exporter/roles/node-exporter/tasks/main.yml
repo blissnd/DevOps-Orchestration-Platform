@@ -1,0 +1,65 @@
+---
+- name: Install wget
+  become: yes
+  yum:
+    name: wget
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="centos"
+  
+- name: Install wget
+  become: yes
+  apt:
+    name: wget
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+  
+- name: Install Git
+  become: yes
+  yum:
+    name: git
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="centos"
+  
+- name: Install Git
+  become: yes
+  apt:
+    name: git
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+
+- name: create apps dir
+  become: yes
+  file:
+    path: "/opt/apps"
+    state: directory
+
+- name: create GoLang directory
+  become: yes
+  file:
+    path: "/opt/apps/go"
+    state: directory
+
+- name: Copy Golang node-exporter install script across
+  become: yes
+  template:
+    src: install_node_exporter.sh.j2
+    dest:  "/opt/apps/go/install_node_exporter.sh"
+    mode: 0755
+
+- name: Run GoLang node-exporter install script
+  become: yes
+  shell: ./install_node_exporter.sh
+  args:
+    chdir: "/opt/apps/go"
+
+- name: Copy node-exporter systemd service template across
+  become: yes
+  template:
+    src: node-exporter.service.j2
+    dest: /lib/systemd/system/node-exporter.service
+
+- name: Start node-exporter
+  become: yes
+  service:
+    name: node-exporter
+    state: started

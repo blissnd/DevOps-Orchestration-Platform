@@ -1,0 +1,41 @@
+---
+- name: Install xfce4
+  become: yes
+  apt:
+    name: xfce4
+    state: latest
+    update_cache: yes
+
+- name: Install xfce4-goodies
+  become: yes
+  apt:
+    name: xfce4-goodies
+    state: latest
+    update_cache: yes
+    
+#- name: Install gnome-desktop group
+#  become: yes
+#  apt:
+#    name: gnome
+#    state: latest
+#    update_cache: yes
+
+- name: Set auto-boot
+  become: yes
+  shell: systemctl set-default graphical.target
+
+#- name: Reboot 
+#  become: yes
+#  shell: sleep 2 && shutdown -r now
+#  async: 1
+#  ignore_errors: true
+#  poll: 0
+
+#- name: Wait for VM to come back up
+#  wait_for_connection:
+#    connect_timeout: 500
+#    sleep: 5
+#    delay: 5
+#    timeout: 1000
+
+

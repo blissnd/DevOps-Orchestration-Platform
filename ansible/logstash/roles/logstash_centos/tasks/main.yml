@@ -1,0 +1,51 @@
+---
+- name: Install rpm key for logstash
+  become: yes
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Configure yum repo
+  become: yes
+  yum_repository:
+    name: logstash-6.x
+    description: Elastic repository for 6.x packages
+    baseurl: https://artifacts.elastic.co/packages/6.x/yum
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Install Java
+  become: yes
+  yum:
+    name: java-1.8.0-openjdk-devel
+    state: present
+    
+- name: Install logstash
+  become: yes
+  yum:
+    name: logstash
+    state: present
+
+- name: Copy logstash systemd service template across
+  become: yes
+  template:
+    src: logstash.service.j2
+    dest: /lib/systemd/system/logstash.service
+
+- name: Copy logstash systemd service template across (2)
+  become: yes
+  template:
+    src: logstash.service.j2
+    dest: /etc/systemd/system/logstash.service
+    
+- name: Copy pipeline template across
+  become: yes
+  template:
+    src: pipeline.yml.j2
+    dest: /etc/logstash/conf.d/pipeline.yml
+  
+- name: Start logstash
+  become: yes
+  service:
+    name: logstash
+    state: started
+

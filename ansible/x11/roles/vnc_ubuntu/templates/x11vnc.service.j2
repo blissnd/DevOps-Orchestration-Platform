@@ -1,0 +1,11 @@
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/bin/bash "/opt/start_script_0.sh"
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+---
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '//\s*\$servers->setValue\(''login'',''attr'',''dn''\);'
+    line: "$servers->setValue('login','attr','dn');"
+
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '#\s*\$servers->setValue\(''login'',''attr'',''dn''\);'
+    line: "$servers->setValue('login','attr','dn');"
+
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '(.*)\$servers->setValue\(''login'',''attr'',''uid''\);'
+    line: "// $servers->setValue('login','attr','uid');"

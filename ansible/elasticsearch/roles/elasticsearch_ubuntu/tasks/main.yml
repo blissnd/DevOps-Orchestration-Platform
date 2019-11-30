@@ -1,0 +1,39 @@
+---
+- name: Install rpm key for elasticsearch
+  become: yes
+  apt_key:
+    state: present
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Configure apt repo
+  become: yes
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    state: present 
+    validate_certs: no
+
+- name: Install elasticsearch
+  become: yes
+  apt:
+    name: elasticsearch
+    state: present
+
+- name: Allow to listen to any host from any network
+  become: yes
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '.*network.host\:.*'
+    line: "network.host: 0.0.0.0"
+
+- name: Set transport.host in config file
+  become: yes
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '.*transport.host\:.*'
+    line: "transport.host: localhost"
+    
+- name: Start elasticsearch service
+  become: yes
+  service:
+    name: elasticsearch
+    state: restarted

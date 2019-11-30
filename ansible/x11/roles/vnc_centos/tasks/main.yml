@@ -1,0 +1,41 @@
+---
+- name: Install VNC Server
+  become: yes
+  yum:
+    name: tightvnc-server 
+    state: latest
+
+- name: Provision service files for 2 vnc ports
+  become: yes
+  copy:
+    src: /lib/systemd/system/vncserver@.service
+    dest: /etc/systemd/system/vncserver@:1.service
+    remote_src: yes
+
+- name: Set VNC params
+  become: yes
+  replace:
+    path: /etc/systemd/system/vncserver@:1.service
+    regexp: '<USER>'
+    replace: '{{ hostvars[inventory_hostname].username }}'
+
+- name: Create .vnc directory
+  file:
+    path:  "/home/{{ hostvars[inventory_hostname].username }}/.vnc"
+    state: directory
+
+- name: Set VNC password
+  #become: yes
+  shell: "echo vnc_user | vncpasswd -f > /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd"
+  
+- name: Set vnc passwd file mode
+  shell: "chmod 0600 /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd"
+
+- name: Restart service
+  become: yes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: vncserver@:1.service
+    enabled: true
+

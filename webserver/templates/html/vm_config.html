@@ -1,0 +1,112 @@
+<html>
+<body>
+
+<title>{{.Title}}</title>
+<h1>{{.Title}}</h1>
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+<input id="cloud_platform" name="selected_vm" type="hidden" value="{{.Cloud_Platform}}">
+<input id="instance_construction_type" name="selected_vm" type="hidden" value="{{.Instance_construction_type}}">
+
+<script>
+  var show_ssh = {{.Show_SSH}};
+  var selected_vm = {{.Selected_VM}};
+  var cloud_platform = {{.Cloud_Platform}};
+  var instance_construction_type = {{.Instance_construction_type}};
+  var docker_container_name = ""
+</script>
+
+<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<script src="/js/libs/jquery.min.js"></script>
+
+<table id="vm_table" border="1" padding="1" table-layout="fixed">
+	<thead>
+  <tr>
+		<th>VM Name</th>
+		<th>FQDN</th>
+		<th>IP Address</th>
+		<th>O/S</th>		
+	</tr>
+	</thead>
+  
+  <tbody id="vm_table_body">
+	<tr id="vm_table_row" style="font-size : 12px; padding: 0.4em;">
+			<form id="form_0" action="/virtualbox/" method="POST">
+				<td id="vm_name_field">
+						<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="text" placeholder="Enter VM Name" name="vm_name" required>
+				</td>
+				<td>
+						<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="text" placeholder="Enter FQDN" name="fqdn" required>
+				</td>
+				<td>
+						<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="text" placeholder="Enter IP Address" name="ip_address" required>
+				</td>
+				<td>
+					<select form="form_0" name="OS" style="font-size : 12px; padding: 0.4em;">
+						<option value="centos/7">Centos 7</option>
+						<option value="ubuntu/xenial64">Ubuntu 16</option>
+					</select> 
+				</td>
+				<td border="0">
+					<input form="form_0" type="submit" style="font-size : 12px; padding: 0.4em;" size="3" name="Add VM" value="ADD">
+				</td>
+			</form>
+	</tr>	
+  </tbody>
+</table>
+
+<BR><BR><hr style="border-top: 1px solid #0000ff;"><BR><BR>
+
+<table id="ansible_table" border="1" padding="1" table-layout="fixed">
+	<thead>
+  <tr>
+
+		<th>VM Name</th>
+		<th>FQDN</th>
+		<th>IP Address</th>
+		<th>O/S</th>
+    
+	</tr>
+	</thead>
+  
+  <tbody id="table_body">
+  </tbody>
+</table>
+
+<!-- <BR><BR><hr style="border-top: 1px solid #0000ff;"><BR><BR> -->
+
+<!--
+<table id="service_selector_table" border="1" padding="1">
+	<thead>
+  <tr>
+		<th>VM Name</th>
+    <th>IP Address</th>
+	</tr>
+	</thead>
+  
+ <tbody id="service_selector_table">
+  </tbody>
+</table>
+-->
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+
+<!-- ssh window frame-->
+<div id="ssh_window">
+  <BR><BR><hr style="border-top: 1px solid #0000ff;"><BR>
+  
+  <button id="ssh_window_button_close">CLOSE</button>
+  <button id="ssh_window_button_detach">Detach</button>
+
+  <div id="ssh_div_container"></div>
+
+</div>
+<!-- ssh window frame-->
+
+</body>
+
+<script src="/js/virtualbox_utils.js"></script>
+<script src="/js/ssh_utils.js"></script>
+
+</html>

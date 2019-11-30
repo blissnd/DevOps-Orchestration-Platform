@@ -1,0 +1,52 @@
+<title>{{.Title}}</title>
+<h1>{{.Title}}</h1>
+<h2>{{.LogPath}}</h2>
+
+<form action="/" method="POST">
+<div style="font-size: 10px;"><textarea spellcheck="false" style="font-size: 10px;" name="log_area" id="log_area" rows="50" cols="150">{{printf "%s" .Body}}</textarea>
+<button id="button_freeze_log" type="button">Freeze Log</button>
+</div>
+</form>
+ 
+<script src="/js/libs/jquery.min.js"></script>
+
+<script>
+	$(document).ready(function() {
+	
+		var timer_var = setInterval(log_refresh_timer, 5000);
+		var log_path = {{.LogPath}};
+    var current_log_position = {{.LogPosition}};
+		var log_freeze_toggle = 0;
+    
+		function log_refresh_timer() {
+			$.ajax({
+				url: '/get_log/',
+				type: 'post',
+				dataType: 'json',
+				data : {log_path: log_path, log_position: current_log_position},
+				success : function(data) {
+					//$('#log_area').append(data["log_content"]);
+					document.getElementById("log_area").value += data["log_content"];
+					var elem = document.getElementById("log_area");
+					$(log_area).scrollTop(elem.scrollHeight);
+					current_log_position = data["LogPosition"];
+					//clearInterval(timer_var);
+				},
+			});
+		}
+    
+    $('#button_freeze_log').click(function() {
+      
+      if (log_freeze_toggle == 0) {
+        log_freeze_toggle = 1;
+        clearInterval(timer_var);
+        $(this).html("Continue Log");
+      } else {
+        log_freeze_toggle = 0;
+        $(this).html("Freeze Log");
+        timer_var = setInterval(log_refresh_timer, 5000);
+      }
+    });
+     
+	});
+</script>

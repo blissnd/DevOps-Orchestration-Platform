@@ -1,0 +1,88 @@
+---
+- name: install bind
+  become: yes
+  yum:
+    name: bind
+    state: latest
+
+- name: install bind-utils
+  become: yes
+  yum:
+    name: bind-utils
+    state: latest
+    
+- name: copy named.conf template across
+  become: yes
+  template:
+    src: "centos.named.conf.j2"
+    dest: "/etc/named.conf"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: copy named.conf.local template across
+  become: yes
+  template:
+    src: "centos.named.conf.local.j2"
+    dest: "/etc/named/named.conf.local"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: Create target directory /etc/named/zones
+  become: yes
+  file:
+    path: /etc/named/zones
+    state: directory
+    mode: 0755
+
+- name: copy centos.db.fqdn.j2 template across
+  become: yes
+  template:
+    src: "centos.db.fqdn.j2"
+    dest: "/etc/named/zones/db.{{ hostvars[inventory_hostname].fqdn }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+- name: copy centos.db.ip_address_part1.ip_address_part2.j2 template across
+  become: yes
+  template:
+    src: "centos.db.ip_address_part1.ip_address_part2.j2"
+    dest: "/etc/named/zones/db.{{ hostvars[inventory_hostname].ip_address_part_1 }}.{{ hostvars[inventory_hostname].ip_address_part_2 }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+##########################
+
+- name: enable named
+  become: yes
+  service:
+    name: named
+    enabled: yes
+    state:  restarted
+
+############ Configure DNS Clients #####################
+
+- name: Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'search {{ hostvars[inventory_hostname].fqdn }}'
+    insertbefore: BOF
+    line: 'search {{ hostvars[inventory_hostname].fqdn }}'
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver {{ hostvars[inventory_hostname].ip_address }}'
+    insertbefore: BOF
+    line: 'nameserver {{ hostvars[inventory_hostname].ip_address }}'
+
+#- name: copy dns details across
+#  shell:  touch "{{ item.ip_address_part_4}}.{{ item.fqdn }}"
+#  with_items:
+#     - "{{ hostvars[inventory_hostname].other_hosts }}"
+

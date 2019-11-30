@@ -1,0 +1,104 @@
+---
+- name: Install filebeat
+  become: yes
+  yum:
+    name: "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.4.2-x86_64.rpm"
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Install filebeat
+  become: yes
+  apt:
+    deb: "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.4.2-amd64.deb"
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.*output.elasticsearch.*'
+    line: "#output.elasticsearch:"
+    backup: yes
+
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.*hosts: \["localhost:9200"\].*'
+    line: " #hosts: [\"localhost:9200\"]"
+    backup: yes
+
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.*output.logstash.*'
+    line: "output.logstash:"
+    backup: yes
+
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.* enabled\:.*'
+    line: "  enabled: true"
+    backup: yes
+
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.*hosts:.*:5044.*'
+    line: "   hosts: [\"{{ hostvars[inventory_hostname].server }}:5044\"]"
+    backup: yes
+
+- name: Configure /etc/filebeat/filebeat.yml
+  become: yes
+  lineinfile:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '.*host.*:.*:5601.*'
+    line: "   host: \"{{ hostvars[inventory_hostname].server }}:5601\""
+    backup: yes
+
+- name: Start/Restart filebeat service
+  become: yes
+  service:
+    name: filebeat
+    state: restarted
+
+- name: Load template
+  become: yes
+  shell: "filebeat setup --template -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=[\"{{ hostvars[inventory_hostname].server }}:9200\"]'"
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Load kibana dashboards
+  become: yes
+  shell: filebeat setup --dashboards
+
+- name: Create apps directory
+  become: yes
+  file:
+    path: "/opt/apps"
+    state: directory
+  
+- name: Copy configure_dashboards_for_logstash.sh template across
+  become: yes
+  template:
+    src: configure_dashboards_for_logstash.sh.j2
+    dest:  "/opt/apps/configure_dashboards_for_logstash.sh"
+    mode: 755
+
+- name: Configure dashboards for logstash output
+  become: yes
+  shell: ./configure_dashboards_for_logstash.sh &
+  args:
+    chdir: "/opt/apps"
+
+- name: Start/Restart filebeat service
+  become: yes
+  service:
+    name: filebeat
+    state: restarted

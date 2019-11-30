@@ -1,0 +1,7 @@
+---
+-   hosts:
+    - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:
+      - deploy_mongodb
+

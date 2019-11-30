@@ -1,0 +1,36 @@
+---
+- name: update bashrc 1
+  lineinfile:
+    dest: "{{ home_dir }}/.bashrc"
+    line: "alias c=clear"
+    regexp: "alias c=clear"
+    owner:  "{{ username }}"
+    state:  present
+    insertafter:  EOF
+    
+- name: update bashrc 2
+  lineinfile:
+    dest: "{{ home_dir }}/.bashrc"
+    line: "alias l='ls -l'"
+    regexp: "alias l='ls -l'"
+    owner:  "{{ username }}"
+    state:  present
+    insertafter:  EOF
+    
+- name: update bashrc 3
+  lineinfile:
+    dest: "{{ home_dir }}/.bashrc"
+    line: "alias b='cd ..'"
+    regexp: "alias b='cd ..'"
+    owner:  "{{ username }}"
+    state:  present
+    insertafter:  EOF
+    
+- name: update bashrc 4
+  lineinfile:
+    dest: "{{ home_dir }}/.bashrc"
+    line: "PS1='$HOSTNAME:$PWD>'"
+    regexp: "PS1='$HOSTNAME:$PWD>'"
+    owner:  "{{ username }}"
+    state:  present
+    insertafter:  EOF

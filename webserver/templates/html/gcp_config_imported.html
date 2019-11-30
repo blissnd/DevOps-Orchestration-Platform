@@ -1,0 +1,154 @@
+<html>
+<body>
+
+<title>{{.Title}}</title>
+<h2>{{.Title}}</h2>
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+<input id="cloud_platform" name="selected_vm" type="hidden" value="{{.Cloud_Platform}}">
+<input id="instance_construction_type" name="selected_vm" type="hidden" value="{{.Instance_construction_type}}">
+
+<script>
+  var show_ssh = {{.Show_SSH}};
+  var selected_vm = {{.Selected_VM}};
+  var cloud_platform = {{.Cloud_Platform}}
+	var instance_construction_type = {{.Instance_construction_type}}
+	var docker_container_name = ""
+</script>
+
+<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<script src="/js/libs/jquery.min.js"></script>
+
+<form id="form_import" action="/gcp_imported/" method="POST">
+
+	<input form="form_import" type="hidden" id="action_to_execute" name="ImportInstances" value="1">
+	<input form="form_import" class="non_table_text_button" type="submit" name="Import Instances" id="button_instance_import" value="Import VM Instances from Google Cloud">
+
+</form>
+
+<BR><hr style="border-top: 1px solid #0000ff;"><BR><BR>
+
+<form id="form_0" action="/gcp_imported/" method="POST">
+<table id="vm_table" border="0" padding="1" table-layout="fixed">	  
+  <tbody id="vm_table_body">
+		<tr id="vm_table_row">			
+			<td id="vm_name_field">
+					<div id="instance_dropdown"></div>												
+			</td>
+			<td>
+				<input form="form_0" class="non_table_text_button" type="text" size="20" placeholder="Google User ID" name="user_id" id="user_id" required>
+			</td>
+			<td>
+				<select form="form_0" name="OS" style="font-size : 12px; padding: 0.4em;">
+					<option value="centos/7">Centos 7</option>
+					<option value="ubuntu/xenial64">Ubuntu 16</option>
+				</select>
+			</td>
+			<td>
+	        <input form="form_0" class="non_table_text_button" type="text" placeholder="FQDN" name="fqdn">
+			</td>			
+	      <td>
+	          <textarea form="form_0" class="non_table_text_button" rows="7" cols="60" type="textarea" placeholder="SSH Private Key" name="ssh_private_key" id="ssh_private_key_textarea" required></textarea>
+				</td>
+				<td>
+					<input form="form_0" type="hidden" id="action_to_execute_2" name="SetInstanceDetails" value="1">
+				</td>					
+		</tr>	
+  </tbody>
+</table><BR>
+<input form="form_0" class="non_table_text_button" type="submit" name="SetInstanceDetails" id="button_set_instance_details" value="Set Instance Details">					
+</form>
+
+<script>
+
+	$(document).ready(function() {
+
+		$("#button_instance_import").click(function(event) {
+
+			event.preventDefault();
+		  var form_id = $(this).attr("form");
+		  
+		  $("#button_instance_import").attr("disabled", true);
+			$("#waiting_icon_div").html("<BR>Please wait while the data is retrieved from Google Cloud...");
+
+		  document.getElementById(form_id).action = "/gcp_imported/";
+		  		  
+			document.getElementById("action_to_execute").setAttribute("name", "Import Instances"); 
+		  
+		  document.getElementById(form_id).submit();
+		});	
+		//$("#button_instance_import").attr("enabled", true);
+		//////////////////////////////////////////////////////////
+		$("#button_set_instance_details").click(function(event) {
+
+			user_id = document.getElementById("user_id").value
+			ssh_key = document.getElementById("ssh_private_key_textarea").value			
+
+		  var form_id = $(this).attr("form");		  		  			
+
+		  document.getElementById(form_id).action = "/gcp_imported/";
+			document.getElementById("action_to_execute").setAttribute("name", "SetInstanceDetails");			
+
+		});
+	});
+
+</script>
+
+<div id="waiting_icon_div"></div>
+
+<BR><BR><hr style="border-top: 1px solid #0000ff;"><BR><BR>
+
+<table id="ansible_table" border="1" padding="1" width="100%">
+	<thead>
+  <tr>
+		<th>Instance Name</th>
+    <th>O/S</th>
+    <th>Region</th>
+    <th>AZ</th>		
+    <th>FQDN</th>
+    <th>User ID</th>
+		<th>Public IP Address</th>
+		<th>Private IP Address</th>
+		<th colspan="5"></th>          
+	</tr>
+	</thead>
+  
+  <tbody id="table_body">
+  </tbody>
+</table>
+
+<!--
+<table id="service_selector_table" border="1" padding="1">
+	<thead>
+  <tr>
+		<th>VM Name</th>
+    <th>IP Address</th>
+	</tr>
+	</thead>
+  
+ <tbody id="service_selector_table">
+  </tbody>
+</table>
+-->
+
+<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+
+<!-- ssh window frame-->
+<div id="ssh_window">
+  <BR><BR><hr style="border-top: 1px solid #0000ff;"><BR>
+
+  <button id="ssh_window_button_close">CLOSE</button>
+  <button id="ssh_window_button_detach">Detach</button>
+
+  <div id="ssh_div_container"></div>  
+
+</div>
+<!-- ssh window frame-->
+
+</body>
+
+<script src="/js/gcp_imported_utils.js"></script>
+<script src="/js/ssh_utils.js"></script>
+
+</html>

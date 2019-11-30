@@ -1,0 +1,111 @@
+---
+
+### Install Grafana ###
+#
+- name: create apps dir
+  become: yes
+  file:
+    path: "/opt/apps"
+    state: directory
+
+- name: create grafana dir
+  become: yes
+  file:
+    path: "/opt/apps/grafana"
+    state: directory
+
+- name: Install Grafana
+  become: yes
+  yum:
+    name: "https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-5.1.4-1.x86_64.rpm"
+    state: latest
+  when: hostvars[inventory_hostname].os_name =="centos"
+
+- name: Add an apt signing key
+  become: yes
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+  
+- name: Add repo for grafana
+  become: yes
+  apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"            
+      #repo:"deb https://packages.grafana.com/oss/deb beta main"
+    state: present
+    validate_certs: no
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+    
+- name: Install Grafana
+  become: yes
+  apt:
+    name: grafana
+    state: latest
+    allow_unauthenticated: yes
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+
+- name: Start grafana
+  become: yes
+  service:
+    name: grafana-server
+    state: started
+
+- name: "Wait for Grafana to boot"
+  become: yes
+  uri:
+    url: "http://localhost:3000"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 1
+
+### Copy REST API templates across ###
+
+- name: Copy REST API template for data source
+  become: yes
+  template:
+    src: data_source.json.j2
+    dest: "/opt/apps/grafana/data_source.json"
+
+- name: Copy REST API templates for dashboards
+  become: yes
+  template:
+    src: dashboard.json.j2
+    dest: "/opt/apps/grafana/dashboard-{{ item.vm_name }}.json"
+  with_items:
+      - "{{ hostvars[inventory_hostname].other_hosts }}"
+
+- name: Copy api_datasource_upload.sh.j2 script across
+  become: yes
+  template:
+    src: api_datasource_upload.sh.j2
+    dest: "/opt/apps/grafana/api_datasource_upload.sh"
+    mode: 0755
+
+- name: Copy api_dashboard_upload.sh.j2 scripts across
+  become: yes
+  template:
+    src: api_dashboard_upload.sh.j2
+    dest: "/opt/apps/grafana/api_dashboard_upload-{{ item.vm_name }}.sh"
+    mode: 0755
+  with_items:
+      - "{{ hostvars[inventory_hostname].other_hosts }}"
+
+### Upload data sources & dashboards using REST API calls ###
+
+- name: Upload data source json
+  become: yes
+  shell: ./api_datasource_upload.sh
+  args:
+    chdir: /opt/apps/grafana
+
+- name: Upload dashboards
+  become: yes
+  shell: ./api_dashboard_upload-{{ item.vm_name }}.sh
+  args:
+    chdir: /opt/apps/grafana
+  with_items:
+      - "{{ hostvars[inventory_hostname].other_hosts }}"
+  

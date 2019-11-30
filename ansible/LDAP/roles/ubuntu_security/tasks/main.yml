@@ -1,0 +1,312 @@
+---
+- name: install gnutils-bin
+  become: yes
+  apt:
+    name: gnutls-bin
+    state: latest
+
+####### Apache ########
+
+- name: Generate self-signed cert
+  become: yes
+  shell: "openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem -subj \"/C=uk/ST=test/L=test/O=test/CN={{ hostvars[inventory_hostname].fqdn }}\""
+  args:
+    chdir: /etc/phpldapadmin
+    
+- name: activate mod_ssl
+  become: yes
+  shell: a2enmod ssl
+
+- name: copy 000-default.conf.j2 template across
+  become: yes
+  template:
+    src: "000-default.conf.j2"
+    dest: "/etc/apache2/sites-available/000-default.conf"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: enable apache2
+  become: yes
+  service:
+    name: apache2
+    enabled: yes
+    state:  restarted
+
+######## LDAP ########
+
+- name: Secure ldap.conf
+  become: yes
+  file:
+    path: /etc/ldap.conf
+    mode: 0700
+    
+- name: add security capability to /etc/default/slapd
+  become: yes
+  lineinfile:
+    path: /etc/default/slapd
+    regexp: 'SLAPD_SERVICES=.*'
+    line: "SLAPD_SERVICES=\"ldap:/// ldapi:/// ldaps:///\""
+
+- name: add security to /etc/ldap.conf
+  become: yes
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'ssl.*on.*'
+    line: "ssl on"
+
+- name: add security to /etc/ldap/ldap.conf
+  become: yes
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'TLSCACertificateFile  /etc/ldap/ssl/cacert.pem'
+    line: "TLSCACertificateFile  /etc/ldap/ssl/cacert.pem"
+
+- name: add security to /etc/ldap/ldap.conf
+  become: yes
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'TLSCertificateFile  /etc/ldap/ssl/ldap01_slapd_cert.pem'
+    line: "TLSCertificateFile  /etc/ldap/ssl/ldap01_slapd_cert.pem"
+    state: present
+
+- name: add security to /etc/ldap/ldap.conf
+  become: yes
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'TLSCertificateKeyFile  /etc/ldap/ssl/ldap01_slapd_key.pem'
+    line: "TLSCertificateKeyFile  /etc/ldap/ssl/ldap01_slapd_key.pem"
+
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  replace:  
+    path: /etc/phpldapadmin/config.php
+    regexp: '^\$servers.*setValue\(''login'',''bind_id'',''.*\);'
+    replace: "$servers->setValue('login','bind_id','cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}');"
+
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '.*servers.*setValue\(''server'',''host'',''.*127.0.0.1.*\);'
+    line: "$servers->setValue('server','host','ldaps://127.0.0.1:636');"
+    
+- name: configure /etc/phpldapadmin/config.php
+  become: yes
+  lineinfile:
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: 'servers.*setValue\(''server'',''port'',389\);'
+    line: "$servers->setValue('server','port',0);"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'uri ldap.*/'
+    line: "uri ldaps://{{ hostvars[inventory_hostname].ip_address }}:636/"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: '#ssl.* '
+    line: "ssl on"
+
+- name: configure /etc/nslcd.conf
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'tls_reqcert allow'
+    line: "tls_reqcert allow"
+
+- name: configure /etc/ldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/ldap/ldap.conf
+    state: present
+    regexp: '(?i)URI ldap.*'
+    line: "URI ldaps://{{ hostvars[inventory_hostname].ip_address }}:636/"
+
+- name: configure /etc/ldap/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/ldap/ldap.conf
+    state: present
+    regexp: 'TLS_REQCERT allow'
+    line: "TLS_REQCERT allow"
+
+- name: configure /etc/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/ldap.conf
+    state: present
+    regexp: '(?i)URI ldap.*'
+    line: "URI ldaps://{{ hostvars[inventory_hostname].ip_address }}:636/"
+
+- name: configure /etc/ldap.conf
+  become: yes
+  lineinfile:  
+    path: /etc/ldap.conf
+    state: present
+    regexp: 'TLS_REQCERT allow'
+    line: "TLS_REQCERT allow"
+
+######## Ubuntu fixes for LDAP security ########
+
+- name: create ssl cert dir
+  become: yes
+  file:
+    path: /etc/ldap/ssl
+    state: directory
+    mode: 0755
+
+- name: install ssl-cert
+  become: yes
+  apt:
+    name: ssl-cert
+    state: latest
+
+- name: sudo sh -c "certtool --generate-privkey > ./cakey.pem"
+  become: yes
+  shell: sudo sh -c "certtool --generate-privkey > ./cakey.pem"
+  args:
+    chdir: /etc/ldap/ssl
+
+- name: copy ca.info.j2 template across
+  become: yes
+  template:
+    src: "ca.info.j2"
+    dest: "/etc/ldap/ssl/ca.info"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: sudo certtool --generate-self-signed --load-privkey ./cakey.pem --template ./ca.info --outfile ./cacert.pem
+  become: yes
+  shell: sudo certtool --generate-self-signed --load-privkey ./cakey.pem --template ./ca.info --outfile ./cacert.pem
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: sudo certtool --generate-privkey --bits 1024 --outfile ./ldap01_slapd_key.pem
+  become: yes
+  shell: sudo certtool --generate-privkey --bits 1024 --outfile ./ldap01_slapd_key.pem
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: copy ldap01.info.j2 template across
+  become: yes
+  template:
+    src: "ldap01.info.j2"
+    dest: "/etc/ldap/ssl/ldap01.info"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+- name: sudo certtool --generate-certificate --load-privkey ./ldap01_slapd_key.pem --load-ca-certificate ./cacert.pem --load-ca-privkey ./cakey.pem --template ./ldap01.info --outfile ./ldap01_slapd_cert.pem
+  become: yes
+  shell: sudo certtool --generate-certificate --load-privkey ./ldap01_slapd_key.pem --load-ca-certificate ./cacert.pem --load-ca-privkey ./cakey.pem --template ./ldap01.info --outfile ./ldap01_slapd_cert.pem
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: sudo chgrp openldap ./ldap01_slapd_key.pem
+  become: yes
+  shell: sudo chgrp openldap ./ldap01_slapd_key.pem
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: sudo chmod 0640 ./ldap01_slapd_key.pem
+  become: yes
+  shell: sudo chmod 0640 ./ldap01_slapd_key.pem
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: sudo gpasswd -a openldap ssl-cert
+  become: yes
+  shell: sudo gpasswd -a openldap ssl-cert
+  args:
+    chdir: /etc/ldap/ssl
+    
+- name: enable slapd
+  become: yes
+  service:
+    name: slapd
+    enabled: yes
+    state:  restarted
+    
+- name: copy certinfo.ldif.j2 template across
+  become: yes
+  template:
+    src: "certinfo.ldif.j2"
+    dest: "/etc/ldap/ssl/certinfo.ldif"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+- name: sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f certinfo.ldif
+  become: yes
+  shell: sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f certinfo.ldif
+  args:
+    chdir: /etc/ldap/ssl
+  ignore_errors: yes
+  
+- name: copy certinfo_replace.ldif.j2 template across
+  become: yes
+  template:
+    src: "certinfo_replace.ldif.j2"
+    dest: "/etc/ldap/ssl/certinfo_replace.ldif"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+- name: sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f certinfo_replace.ldif
+  become: yes
+  shell: sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f certinfo_replace.ldif
+  args:
+    chdir: /etc/ldap/ssl
+
+#- name: configure /etc/sysconfig/slapd
+    #become: yes
+    #lineinfile:  
+      #path: /etc/sysconfig/slapd
+      #state: present
+      #regexp: 'SLAPD_URLS=.*'
+      #line: "SLAPD_URLS=\"ldapi:/// ldap:/// ldaps:///\""
+
+### Restart everything
+
+#- name: check autofs on
+#  become: yes
+#  shell: chkconfig autofs on
+
+- name: enable nscd
+  become: yes
+  service:
+    name: nscd
+    enabled: yes
+    state:  restarted
+
+- name: enable autofs
+  become: yes
+  service:
+    name: autofs
+    enabled: yes
+    state:  restarted
+
+- name: enable nslcd
+  become: yes
+  service:
+    name: nslcd
+    enabled: yes
+    state:  restarted
+
+- name: enable slapd
+  become: yes
+  service:
+    name: slapd
+    enabled: yes
+    state:  restarted

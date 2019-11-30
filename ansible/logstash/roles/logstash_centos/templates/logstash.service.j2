@@ -1,0 +1,15 @@
+[Unit]
+Description=logstash service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/usr/share/logstash/bin/
+ExecStart=/usr/share/logstash/bin/logstash -f /etc/logstash/logstash-sample.conf --config.reload.automatic
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target
+

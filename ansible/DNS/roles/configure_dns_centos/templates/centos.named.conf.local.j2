@@ -1,0 +1,9 @@
+zone "{{ hostvars[inventory_hostname].fqdn }}" {
+    type master;
+    file "/etc/named/zones/db.{{ hostvars[inventory_hostname].fqdn }}"; # zone file path
+};
+
+zone "{{ hostvars[inventory_hostname].ip_address_part_2 }}.{{ hostvars[inventory_hostname].ip_address_part_1 }}.in-addr.arpa" {
+  type master;
+  file "/etc/named/zones/db.{{ hostvars[inventory_hostname].ip_address_part_1 }}.{{ hostvars[inventory_hostname].ip_address_part_2 }}"; 
+};

@@ -1,0 +1,25 @@
+<html>
+
+<h2 align="center">AWS Access Key Configuration</h2>
+
+<h4>Paste AWS key details here</h4><BR>
+
+<form id="form_0" action="/aws_key_access/" method="POST">
+
+		<h4 style="color: green">AWS Secret Key ID</h4>
+		
+		<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="password" size="70" placeholder="Enter AWS Secret Key ID..." name="aws_secret_key_id" value="{{.AWS_key_ID}}" required>
+		
+		<BR><BR><BR>
+
+		<h4 style="color: green">AWS Secret Key</h4>
+		
+		<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="password" size="100" placeholder="Enter AWS Secret Key..." name="aws_secret_key" value="{{.AWS_secret_key}}" required>
+
+		<BR><BR><BR>
+		
+		<input form="form_0" type="submit" style="font-size : 12px; padding: 0.4em;" size="3" name="aws_key_submit" value="Submit">
+
+</form>
+
+</html>

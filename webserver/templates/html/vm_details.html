@@ -1,0 +1,101 @@
+<html>
+	
+	<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<script src="/js/libs/jquery.min.js"></script>
+
+	<h3>{{.Cloud_Platform}} => {{.Instance_construction_type}} => {{.Selected_VM}}{{.Docker}}</h3><BR>
+	
+	<input id="selected_vm" name="selected_vm" type="hidden" value="{{.Selected_VM}}">
+	<input id="cloud_platform" name="cloud_platform" type="hidden" value="{{.Cloud_Platform}}">
+	<input id="instance_construction_type" name="instance_construction_type" type="hidden" value="{{.Instance_construction_type}}">
+	<input id="docker_container_name" name="docker_container_name" type="hidden" value="{{.Docker_container_name}}">
+	<input id="docker_container_display" name="docker_container_display" type="hidden" value="{{.Docker}}">
+
+	<script>
+		var show_ssh = {{.Show_SSH}};
+		var selected_vm = {{.Selected_VM}}
+		var cloud_platform = {{.Cloud_Platform}}
+		var instance_construction_type = {{.Instance_construction_type}}
+		var docker_container_name = {{.Docker_container_name}}
+		var docker_container_display = {{.Docker}}
+	</script>
+
+	<!------------------------------------------------------------------------------------->	
+	<table>
+		<tr>
+			<td>
+				<form id="form_ssh_launch" action="" target="_blank" method="POST">
+					<input form="form_ssh_launch" class="custom_text_button" type="submit" id="button_sshlaunch_0" name="button_sshlaunch" value="SSH">
+					<input form="form_ssh_launch" type="hidden" value="{{.Selected_VM}}" name="vm_name">
+					<input form="form_ssh_launch" type="hidden" value="{{.Cloud_Platform}}" name="platform_type">
+					<input form="form_ssh_launch" type="hidden" value="{{.Instance_construction_type}}" name="instance_construction_type">
+					<input form="form_ssh_launch" type="hidden" value="{{.Docker_container_name}}" name="docker_container_name">
+					<input form="form_ssh_launch" type="hidden" value="{{.Docker}}" name="docker_container_display">
+				</form>
+			</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td id="iptables_form">
+				<form id="form_iptables" action="" target="_blank" method="POST">
+					<input form="form_iptables" class="custom_text_button" type="submit" id="button_iptables_1" name="button_iptables" value="O/S Platform Firewall">
+					<input form="form_iptables" type="hidden" value="{{.Selected_VM}}" name="vm_name">		
+					<input form="form_iptables" type="hidden" value="{{.Cloud_Platform}}" name="platform_type">
+					<input form="form_iptables" type="hidden" value="{{.Instance_construction_type}}" name="instance_construction_type">					
+				</form>
+			</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td id="docker_form">
+				<form id="form_docker" action="" target="_blank" method="POST">
+					<input form="form_docker" class="custom_text_button" type="submit" id="button_docker_2" name="button_docker" value="Docker Containers">
+					<input form="form_docker" type="hidden" value="{{.Selected_VM}}" name="vm_name">		
+					<input form="form_docker" type="hidden" value="{{.Cloud_Platform}}" name="platform_type">
+					<input form="form_docker" type="hidden" value="{{.Instance_construction_type}}" name="instance_construction_type">
+				</form>
+			</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td id="get_ports_form">
+				<form id="form_get_ports" action="" target="" method="POST">
+					<!-- <input form="form_get_ports" class="custom_text_button" type="submit" id="button_get_ports_3" name="button_get_ports" value="Get Listening Ports">-->
+					<button form="form_get_ports" class="custom_text_button" type="submit" id="button_get_ports_3" name="button_get_ports">Get Listening Ports</button>
+					<input form="form_get_ports" type="hidden" value="{{.Selected_VM}}" id="form_get_ports_vm_name" name="vm_name">		
+					<input form="form_get_ports" type="hidden" value="{{.Cloud_Platform}}" id="form_get_ports_platform_type" name="platform_type">
+					<input form="form_get_ports" type="hidden" value="{{.Instance_construction_type}}" id="form_get_ports_instance_construction_type" name="instance_construction_type">
+					<input form="form_get_ports" type="hidden" value="{{.Docker_container_name}}" id="form_get_ports_docker_container_name" name="docker_container_name">
+				</form>
+			</td>
+		</tr>
+	</table>
+	<!------------------------------------------------------------------------------------->
+
+	<h3 style="color:green">Generic Software Deployment</h3>
+
+	<div id="ansible_deployment_form_basic"></div>
+
+	<BR><hr style="border-top: 1px solid #0000ff;"><BR>
+
+	<h3 style="color:green">Server Deployment</h3>
+
+	<div id="ansible_deployment_form_servers"></div>
+
+	<BR><hr style="border-top: 1px solid #0000ff;"><BR>
+
+	<h3 style="color:green">Client Deployment</h3>
+
+	<div id="ansible_deployment_form_clients"></div>
+
+
+	<!-- ssh window frame-->
+	<div id="ssh_window">
+	  <BR><BR><hr style="border-top: 1px solid #0000ff;"><BR>
+	  <button id="ssh_window_button_close">CLOSE</button>
+	  <button id="ssh_window_button_detach">Detach</button>
+
+	  <div id="ssh_div_container"></div>  
+
+	</div>
+	<!-- ssh window frame-->
+	
+	<script src="/js/vm_details_utils.js"></script>
+	<script src="/js/ssh_utils.js"></script>
+
+</html>

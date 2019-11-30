@@ -1,0 +1,10 @@
+#!/bin/bash
+
+wget https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz
+sudo tar -C /usr/local -xvzf go1.7.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=/opt/apps/go
+
+wget https://github.com/prometheus/node_exporter/releases/download/v0.16.0-rc.1/node_exporter-0.16.0-rc.1.linux-amd64.tar.gz
+tar -xzvf node_exporter-0.16.0-rc.1.linux-amd64.tar.gz
+mv node_exporter-0.16.0-rc.1.linux-amd64 node_exporter

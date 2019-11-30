@@ -1,0 +1,5 @@
+- name: Stop docker container
+  become: yes
+  shell: |
+    docker stop "{{ hostvars[inventory_hostname].vm_name }}--{{ hostvars[inventory_hostname].container_name }}"
+    docker rm "{{ hostvars[inventory_hostname].vm_name }}--{{ hostvars[inventory_hostname].container_name }}"

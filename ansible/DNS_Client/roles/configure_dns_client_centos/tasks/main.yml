@@ -1,0 +1,18 @@
+---
+############ Configure DNS Clients #####################
+
+- name: Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'search {{ hostvars[inventory_hostname].fqdn }}'
+    insertbefore: BOF
+    line: 'search {{ hostvars[inventory_hostname].fqdn }}'
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver {{ hostvars[inventory_hostname].server }}'
+    insertbefore: BOF
+    line: 'nameserver {{ hostvars[inventory_hostname].server }}'

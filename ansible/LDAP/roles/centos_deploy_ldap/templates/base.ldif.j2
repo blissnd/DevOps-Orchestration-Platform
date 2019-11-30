@@ -1,0 +1,19 @@
+# nano base.ldif
+
+dn: {{ hostvars[inventory_hostname].ldap_dn }}
+dc: {{ hostvars[inventory_hostname].fqdn_part_0 }}
+objectClass: top
+objectClass: domain
+
+dn: cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}
+objectClass: organizationalRole
+cn: ldapadm
+description: LDAP Manager
+
+dn: ou=People,{{ hostvars[inventory_hostname].ldap_dn }}
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,{{ hostvars[inventory_hostname].ldap_dn }}
+objectClass: organizationalUnit
+ou: Group

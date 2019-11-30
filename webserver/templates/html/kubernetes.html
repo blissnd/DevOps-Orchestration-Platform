@@ -1,0 +1,36 @@
+<html>
+	
+	<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<script src="/js/libs/jquery.min.js"></script>
+
+	<h1>{{.Title}}</h1><BR>
+	
+	<!----------------------------------------------------------------------------------------------------------->
+	
+	<script>
+		var show_ssh = {{.Show_SSH}};	
+	</script>
+	
+	<!----------------------------------------------------------------------------------------------------------->
+
+	<h3 style="color:green">Select Kubernetes Master</h3>
+	<div id="master_vm_list"></div>
+
+	<!----------------------------------------------------------------------------------------------------------->
+
+	<!-- ssh window frame-->
+	<div id="ssh_window">
+	  <BR><BR><hr style="border-top: 1px solid #0000ff;"><BR>
+	  <button id="ssh_window_button_close">CLOSE</button>
+	  <button id="ssh_window_button_detach">Detach</button>
+
+	  <div id="ssh_div_container"></div>  
+
+	</div>
+	<!-- ssh window frame-->
+		
+	<script src="/js/ssh_utils.js"></script>
+	<script src="/js/kubernetes.js"></script>
+
+</html>

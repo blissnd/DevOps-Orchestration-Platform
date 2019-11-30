@@ -1,0 +1,36 @@
+---
+### CentOS ###
+
+- name: hostnamectl set-hostname --static <persistent_host_name>
+  become: yes
+  shell: "hostnamectl set-hostname --static {{ hostvars[inventory_hostname].vm_name }}"
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: make change persistent
+  become: yes
+  lineinfile:
+    path: "/etc/cloud/cloud.cfg"
+    regexp: 'preserve_hostname: true'
+    line: 'preserve_hostname: true'
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+ 
+
+### Ubuntu ###
+ 
+- name: make change persistent
+  become: yes
+  lineinfile:
+    path: "/etc/hostname"
+    regexp: '{{ hostvars[inventory_hostname].vm_name }}'
+    line: '{{ hostvars[inventory_hostname].vm_name }}'
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: sudo hostname <hostname>
+  become: yes
+  shell: "hostname {{ hostvars[inventory_hostname].vm_name }}"
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+

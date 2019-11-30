@@ -1,0 +1,209 @@
+---
+- name: install openldap
+  become: yes
+  yum:
+    name: openldap
+    state: latest
+
+- name: install compat-openldap
+  become: yes
+  yum:
+    name: compat-openldap
+    state: latest
+  
+- name: install openldap-clients
+  become: yes
+  yum:
+    name: openldap-clients
+    state: latest
+  
+- name: install openldap-servers
+  become: yes
+  yum:
+    name: openldap-servers
+    state: latest
+  
+- name: install nss-pam-ldapd
+  become: yes
+  yum:
+    name: nss-pam-ldapd
+    state: latest
+
+- name: install pam_ldap
+  become: yes
+  yum:
+    name: pam_ldap
+    state: latest
+
+- name: install nscd
+  become: yes
+  yum:
+    name: nscd
+    state: latest
+
+- name: install autofs
+  become: yes
+  yum:
+    name: autofs
+    state: latest
+
+- name: install rpcbind
+  become: yes
+  yum:
+    name: rpcbind
+    state: latest
+
+- name: install nfs-utils
+  become: yes
+  yum:
+    name: nfs-utils
+    state: latest
+
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'uri ldap.*'
+    line: "uri ldap://{{ hostvars[inventory_hostname].server }}:389/"
+    
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'base dc=.*'
+    line: "base {{ hostvars[inventory_hostname].ldap_dn }}"
+
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'binddn.*'
+    line: "binddn cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}"
+    
+- name: Modify /etc/nslcd.conf with Bind params
+  become: yes
+  lineinfile:  
+    path: /etc/nslcd.conf
+    state: present
+    regexp: 'bindpw.*'
+    line: "bindpw admin"
+
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'passwd:.*'
+    line: "passwd:     compat ldap"
+    
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'shadow:.*'
+    line: "shadow:     compat ldap"
+    
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'group:\s*files'
+    line: "group:     compat ldap"
+
+- name: Modify /etc/nsswitch.conf with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/nsswitch.conf
+    state: present
+    regexp: 'automount:.*'
+    line: "automount:  files ldap"
+    
+- name: Copy autofs bind parameters file across
+  become: yes
+  template:
+    src:  autofs.j2
+    dest: "/etc/sysconfig/autofs"
+
+- name: Modify /etc/pam.d/password-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/password-auth 
+    state: present
+    regexp: 'password    sufficient    pam_unix.so md5 shadow nullok try_first_pass.*'
+    line: "password    sufficient    pam_unix.so md5 shadow nullok try_first_pass"
+
+- name: Modify /etc/pam.d/system-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/system-auth 
+    state: present
+    regexp: 'password    sufficient    pam_unix.so md5 shadow nullok try_first_pass.*'
+    line: "password    sufficient    pam_unix.so md5 shadow nullok try_first_pass"
+
+- name: Modify /etc/pam.d/system-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/system-auth 
+    state: present
+    regexp: 'auth.*sufficient.*pam_ldap.so'
+    line: "auth        sufficient    pam_ldap.so"
+    
+- name: Modify /etc/pam.d/system-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/system-auth 
+    state: present
+    regexp: 'password.*sufficient.*pam_ldap.so'
+    line: "password        sufficient    pam_ldap.so"
+    
+- name: Modify /etc/pam.d/password-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/password-auth 
+    state: present
+    regexp: 'auth.*sufficient.*pam_ldap.so'
+    line: "auth        sufficient    pam_ldap.so"
+    
+- name: Modify /etc/pam.d/password-auth with PAM directives
+  become: yes
+  lineinfile:  
+    path: /etc/pam.d/password-auth 
+    state: present
+    regexp: 'password.*sufficient.*pam_ldap.so'    
+    line: "password        sufficient    pam_ldap.so"
+    
+### Restart everything
+
+- name: check autofs on
+  become: yes
+  shell: chkconfig autofs on
+
+- name: enable nscd
+  become: yes
+  service:
+    name: nscd
+    enabled: yes
+    state:  restarted
+
+- name: enable autofs
+  become: yes
+  service:
+    name: autofs
+    enabled: yes
+    state:  restarted
+
+- name: enable nslcd
+  become: yes
+  service:
+    name: nslcd
+    enabled: yes
+    state:  restarted
+
+- name: activate ldap auth
+  become: yes
+  shell: sudo authconfig --enableldap --update

@@ -1,0 +1,29 @@
+---
+- name: create docker cert dir
+  become: yes
+  file:
+    path: "/etc/docker/certs.d"
+    state: directory
+    mode: 0755
+
+- name: create docker cert dir
+  become: yes
+  file:
+    path: "/etc/docker/certs.d/{{ hostvars[inventory_hostname].nexus_registry_dns }}:18444"
+    state: directory
+    mode: 0755
+
+- name: copy certificate across
+  become: yes
+  template:
+    src: certificate.crt.j2
+    dest: "/etc/docker/certs.d/{{ hostvars[inventory_hostname].nexus_registry_dns }}:18444/certificate.crt"
+    mode: 0655
+
+### Restart docker daemon ###
+
+- name: Restart docker daemon
+  become: yes
+  service:
+    name: docker
+    state: restarted

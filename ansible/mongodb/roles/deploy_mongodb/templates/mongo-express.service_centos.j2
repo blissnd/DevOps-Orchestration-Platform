@@ -1,0 +1,11 @@
+[Unit]
+Description=mongo-express
+
+[Service]
+Environment=ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+ExecStart=/usr/bin/mongo-express -a
+WorkingDirectory=/usr/lib/node_modules/mongo-express/
+
+[Install]
+WantedBy=multi-user.target
+

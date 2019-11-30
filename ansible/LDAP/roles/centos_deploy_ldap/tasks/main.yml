@@ -1,0 +1,137 @@
+---
+
+- name: install openldap
+  become: yes
+  yum:
+    name: openldap
+    state: latest
+
+- name: install compat-openldap
+  become: yes
+  yum:
+    name: compat-openldap
+    state: latest
+  
+- name: install openldap-clients
+  become: yes
+  yum:
+    name: openldap-clients
+    state: latest
+
+- name: install openldap-servers
+  become: yes
+  yum:
+    name: openldap-servers
+    state: latest
+
+- name: install openldap-servers-sql
+  become: yes
+  yum:
+    name: openldap-servers-sql
+    state: latest
+  
+- name: install openldap-devel
+  become: yes
+  yum:
+    name: openldap-devel
+    state: latest
+  
+- name: enable slapd.service
+  become: yes
+  service:
+    name: slapd
+    enabled: yes
+    state:  restarted
+
+#########################
+- name: Turn off selinux
+  become: yes
+  shell: setenforce 0
+#########################
+
+- name: Set up a root user, which we can use later to bootstrap the directory
+  template:
+    src:  db.ldif.j2
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/db.ldif"
+
+- name: Set up a base LDAP DB
+  template:
+    src:  base.ldif.j2
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/base.ldif"
+    
+- name: ldapmodify
+  become: yes
+  shell:  ldapmodify -Y EXTERNAL -H ldapi:/// -f  "{{ hostvars[inventory_hostname].home_dir }}/db.ldif"
+  ignore_errors: yes
+
+- name: ldapadd (1)
+  become: yes
+  shell:  ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+  ignore_errors: yes
+  
+- name: ldapadd (2)
+  become: yes
+  shell:  ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif
+  ignore_errors: yes
+  
+- name: ldapadd (3)
+  become: yes
+  shell:  ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
+  ignore_errors: yes
+
+- name: ldapadd (4)
+  become: yes
+  shell:  ldapadd -x -w admin -D "cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}" -f "{{ hostvars[inventory_hostname].home_dir }}/base.ldif"
+  ignore_errors: yes
+ 
+#########################
+
+- name: install prereq for phpldapadmin
+  become: yes
+  yum:
+    name: epel-release
+    state: latest
+    
+- name: install phpldapadmin
+  become: yes
+  yum:
+    name: phpldapadmin
+    state: latest
+
+- name: Give outside access to Apache
+  become: yes
+  replace:  
+    path: /etc/httpd/conf.d/phpldapadmin.conf
+    regexp: 'Require local'
+    replace: 'Require all granted'
+  
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '//\s*\$servers->setValue\(''login'',''attr'',''dn''\);'
+    line: "$servers->setValue('login','attr','dn');"
+
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '#\s*\$servers->setValue\(''login'',''attr'',''dn''\);'
+    line: "$servers->setValue('login','attr','dn');"
+
+- name: Modify PHP Params for Bind ID
+  become: yes
+  lineinfile:  
+    path: /etc/phpldapadmin/config.php
+    state: present
+    regexp: '(.*)\$servers->setValue\(''login'',''attr'',''uid''\);'
+    line: "// $servers->setValue('login','attr','uid');"
+  
+- name: enable httpd
+  become: yes
+  service:
+    name: httpd
+    enabled: yes
+    state:  restarted

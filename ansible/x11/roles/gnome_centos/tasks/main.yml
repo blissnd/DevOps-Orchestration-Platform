@@ -1,0 +1,29 @@
+---
+- name: Install  epel-release
+  become: yes
+  yum:
+    name: epel-release
+    state: latest
+    update_cache: yes
+
+- name: Install gnome-desktop group
+  become: yes
+  shell: yum groupinstall -y gnome-desktop
+
+- name: Set auto-boot
+  become: yes
+  shell: systemctl set-default graphical.target
+
+- name: Reboot 
+  become: yes
+  shell: sleep 2 && shutdown -r now
+  async: 1
+  ignore_errors: true
+  poll: 0
+
+- name: Wait for VM to come back up
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 100

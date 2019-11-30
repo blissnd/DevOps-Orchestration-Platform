@@ -1,0 +1,9 @@
+ filebeat setup -e \
+    -E output.logstash.enabled=false \
+    -E output.elasticsearch.hosts=['{{ hostvars[inventory_hostname].server }}:9200'] \
+        -E setup.kibana.host={{ hostvars[inventory_hostname].server }}:5601
+
+
+#-E output.elasticsearch.username=filebeat_internal \
+#-E output.elasticsearch.password=YOUR_PASSWORD \
+

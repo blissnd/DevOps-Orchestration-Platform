@@ -1,0 +1,26 @@
+provider "google" {
+  credentials = "${file("../gcp_bootstrap/gcp_credentials.json")}"
+  project = "{<project_id>}"
+  region = "{<region>}"
+}
+
+resource "google_compute_firewall" "default-fw" {
+  name    = "allow-ssh-and-icmp"
+  #network = "${google_compute_network.default.self_link}"
+  network = "default"
+  
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    {<firewall_tcp_section>}
+  }
+	
+	 allow {
+    protocol = "udp"
+    {<firewall_udp_section>}
+  }
+	
+}

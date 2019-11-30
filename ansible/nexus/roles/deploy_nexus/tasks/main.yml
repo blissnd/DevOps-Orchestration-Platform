@@ -1,0 +1,41 @@
+---
+- name: Start Nexus
+  become: yes
+  shell: /opt/nexus/nexus3/bin/nexus start
+  #args:
+  #  chdir: '/opt/nexus/nexus3/bin'
+ 
+- name: Get default admin password
+  become: yes
+  slurp:
+    src: /opt/nexus/sonatype-work/nexus3/admin.password
+  register: default_admin_password_b64
+
+- name: Assign admin password to variable
+  set_fact:
+    default_admin_password: "{{ default_admin_password_b64['content'] | b64decode }}"
+
+- name: Copy admin password to file for later use
+  become: yes
+  delegate_to: localhost
+  copy:
+    content: "{{ default_admin_password }}"
+    dest: "nexus_admin_password"
+    mode: 0700
+
+ ### Pause for 60 seconds to give nexus a chance to boot up ###
+- pause:
+    seconds: 60 
+    
+ ### Create docker registry on port 18444 ###
+ 
+- name: copy docker registry creation script across
+  become: yes
+  template:
+    src: groovy_docker_registry_create_script.sh.j2
+    dest: "/home/{{ hostvars[inventory_hostname].username }}/groovy_docker_registry_create_script.sh"
+    mode: 0755
+    
+- name: run script 
+  become: yes
+  shell: "/home/{{ hostvars[inventory_hostname].username }}/groovy_docker_registry_create_script.sh"

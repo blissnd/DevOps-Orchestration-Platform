@@ -1,0 +1,27 @@
+---
+node-exporter-hosts:
+  hosts:
+    vm-1:
+    vm-2:
+    vm-3:
+  vars:
+    ansible_ssh_private_key_file: "../.ssh/private_key"
+    install_dir: "/opt/apps"
+    remote_user: blissnd
+
+prometheus-hosts:
+  hosts:
+    vm-1:
+  vars:
+    ansible_ssh_private_key_file: "../.ssh/private_key"
+    install_dir: "/opt/apps"
+    remote_user: blissnd
+
+grafana-hosts:
+  hosts:
+    vm-2:
+  vars:
+    ansible_ssh_private_key_file: "../.ssh/private_key"
+    install_dir: "/opt/apps"
+    remote_user: blissnd
+

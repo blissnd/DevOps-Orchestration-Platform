@@ -1,0 +1,20 @@
+---
+- name: Copy customer join command template across
+  become: yes
+  template:
+    src: cluster_join_command.sh.j2
+    dest: /opt/cluster_join_command.sh
+    mode: 0755
+
+#- name: Reset node
+#  become: yes
+#  shell: "kubeadm reset -f"
+  
+- name: set ip_forward to 1
+  become: yes
+  shell: 'echo "1" > /proc/sys/net/ipv4/ip_forward'
+  when: hostvars[inventory_hostname].os_name =="centos"
+
+- name: Run join command script
+  become: yes
+  shell: "/opt/cluster_join_command.sh"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+terraform init
+terraform apply -auto-approve
+
+terraform output public_dns
+terraform output public_ip_address
+terraform output private_ip_address

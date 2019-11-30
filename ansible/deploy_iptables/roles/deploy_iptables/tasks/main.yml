@@ -1,0 +1,41 @@
+---  
+- name: copy configuration script template accross
+  become: yes
+  template:
+    src: configure_iptables.j2
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/configure_iptables.sh"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: run iptables config script (in case already installed)
+  become: yes
+  shell: "{{ hostvars[inventory_hostname].home_dir }}/configure_iptables.sh"
+  ignore_errors: yes
+
+#########################################################
+
+- name: install iptables
+  become:   yes
+  apt:
+    name: iptables
+    state: latest
+    update_cache: yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+  
+- name: install iptables
+  become: yes
+  yum:
+    name: iptables
+    state: latest
+  when:
+     hostvars[inventory_hostname].os_name == "centos"
+
+#########################################################
+
+- name: run iptables config script
+  become: yes
+  shell: "{{ hostvars[inventory_hostname].home_dir }}/configure_iptables.sh"
+
+#########################################################

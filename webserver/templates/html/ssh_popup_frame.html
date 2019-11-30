@@ -1,0 +1,63 @@
+<HTML>
+
+<div id="ssh_window_redirection"></div>
+
+<script src="/js/libs/jquery.min.js"></script>
+<script>
+    
+	$(document).ready(function() {
+		
+		window.scrollTo(0, 5000);
+		window.parent.scrollTo(0, 5000);
+		window.parent.parent.scrollTo(0, 5000);
+
+		var selected_vm = window.opener.selected_vm;
+		var cloud_platform = window.opener.cloud_platform;
+		var instance_construction_type = window.opener.instance_construction_type;
+		var docker_container_name_element = window.opener.docker_container_name_element;
+		
+		if (docker_container_name_element) {
+			docker_container_name = docker_container_name_element.value;
+		}
+
+		url_path = "";
+
+		if ((cloud_platform == "aws") && (instance_construction_type == "Imported")) {
+			url_path = "/get_aws_imported_map/"
+		} else if ((cloud_platform == "aws") && (instance_construction_type == "Managed")) {
+			url_path = "/get_aws_map/"
+		} else if ((cloud_platform == "gcp") && (instance_construction_type == "Managed")) {
+			url_path = "/get_gcp_map/"
+		} else if ((cloud_platform == "gcp") && (instance_construction_type == "Imported")) {
+			url_path = "/get_gcp_imported_map/"
+		} else if (cloud_platform == "virtualbox") {
+			url_path = "/get_vm_map/"
+		} else {
+			url_path = "/get_docker_map/"
+		}
+
+    $.ajax({
+				url: url_path,
+				type: 'post',
+				dataType: 'json',
+				//data : {log_path: log_path, log_position: current_log_position},
+				success : function(data) {
+        
+					//var selected_vm = parent.document.getElementById("selected_vm").value;					
+					//$('#ssh_window_redirection').html("<meta http-equiv=\"refresh\" content=\"0; url=http://192.168.1.13:8080/\" />");
+					gotty_ip_address = data[selected_vm]["gotty_ip_address"];
+					gotty_port = data[selected_vm]["gotty_port"];
+
+					if (gotty_ip_address != "" && gotty_port != "") {
+						document.location.replace(gotty_ip_address + ":" + gotty_port);
+						//window.location.replace("http://192.168.1.13:8080");
+					}
+				}
+
+			});
+  });
+</script>
+
+<!-- <a href="http://192.168.1.13:8080/">SSH Window</a> -->
+
+</HTML>

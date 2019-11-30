@@ -1,0 +1,14 @@
+$TTL    604800
+@       IN      SOA     {{ hostvars[inventory_hostname].vm_name }}.{{ hostvars[inventory_hostname].fqdn }}. admin.{{ hostvars[inventory_hostname].fqdn }}. (
+                              3         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+; name servers
+      IN      NS      {{ hostvars[inventory_hostname].vm_name }}.{{ hostvars[inventory_hostname].fqdn }}.
+
+; PTR Records
+{% for host in hostvars[inventory_hostname].other_hosts %}
+{{ host.ip_address_part_4 }}.{{ host.ip_address_part_3 }}   IN      PTR     {{ host.vm_name }}.{{ host.fqdn }}.    ; {{ host.ip_address }}
+{% endfor %}

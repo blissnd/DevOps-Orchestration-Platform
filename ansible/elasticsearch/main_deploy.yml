@@ -1,0 +1,7 @@
+---
+- hosts:
+  - masters
+  remote_user: "{{ hostvars[inventory_hostname].username }}"
+  roles:
+    - { role: 'elasticsearch_centos', when:  "hostvars[inventory_hostname].os_name == 'centos'" }  
+    - { role: 'elasticsearch_ubuntu', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }

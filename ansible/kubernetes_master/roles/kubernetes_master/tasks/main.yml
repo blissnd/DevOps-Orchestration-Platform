@@ -1,0 +1,73 @@
+---
+#- name: set ip_forward to 1
+#  become: yes
+#  replace:
+#    path: '/proc/sys/net/ipv4/ip_forward'
+#    regexp: '0'
+#    replace: '1'
+
+- name: set ip_forward to 1
+  become: yes
+  shell: 'echo "1" > /proc/sys/net/ipv4/ip_forward'
+  when: hostvars[inventory_hostname].os_name =="centos"
+  
+- name: kubeadm init
+  become: yes
+  shell: "kubeadm init --apiserver-advertise-address={{ hostvars[inventory_hostname].ip_address }} --ignore-preflight-errors=SystemVerification"
+  register: kubeadm_output
+  ignore_errors: true
+
+- name: Get output from cluster join command
+  become: yes
+  shell: "kubeadm token create --print-join-command"
+  register: cluster_join_command_raw  
+  
+#- name: Set new fact containing cluster join command
+#  set_fact:
+#    cluster_join_command: "{{ kubeadm_output.stdout | regex_search('(kubeadm join.*?sha256\\:\\w*)') }}"
+
+- name: Set new fact containing cluster join command
+  set_fact:
+    cluster_join_command: "{{ cluster_join_command_raw.stdout }}"
+
+- name: Save to file
+  become: yes
+  copy:
+    content: "sudo {{ cluster_join_command }} --ignore-preflight-errors=SystemVerification"
+    dest: "/opt/cluster_join_command.txt"
+    mode: 0755
+
+- name: Fetch cluster join command
+  become: yes
+  fetch:
+    src: "/opt/cluster_join_command.txt"
+    dest: "../kubernetes_agent/roles/kubernetes_agent/templates/cluster_join_command.sh.j2"
+    flat: yes
+
+- name: Copy configure_kube_for_non_root.sh.j2 template across
+  become: yes
+  template:
+    src: configure_kube_for_non_root.sh.js
+    dest: /opt/configure_kube_for_non_root.sh
+    mode: 0755
+
+- name: Remove previous config file
+  shell: rm -f $HOME/.kube/config
+  ignore_errors: yes
+
+- name: Run configure_kube_for_non_root.sh
+  shell:  /opt/configure_kube_for_non_root.sh
+
+### Deploy Dashboard ###
+- name: Copy yaml template across
+  become: yes
+  template:
+    src: kubernetes_dashboard_deployment.yaml.j2
+    dest: /opt/kubernetes_dashboard_deployment.yaml
+    mode: 0755
+
+- name: Run command to deploy dashboard  
+  shell: "kubectl apply -f /opt/kubernetes_dashboard_deployment.yaml"
+
+- name: Run command to give superuser access cluster-wide
+  shell: "kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts"

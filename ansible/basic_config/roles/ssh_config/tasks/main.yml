@@ -1,0 +1,21 @@
+---
+- name: secure sshd_config file
+  become: yes
+  lineinfile:  
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    - regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+  notify: restart ssh
+
+- name:    fetch public ssh key from VM
+  become: yes
+  fetch:
+    src:    "{{ hostvars[inventory_hostname].home_dir }}/.ssh/authorized_keys"
+    dest:   "../ssh_keys/{{ hostvars[inventory_hostname].vm_name }}/authorized_keys"
+    flat:   yes

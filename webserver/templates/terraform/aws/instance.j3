@@ -1,0 +1,14 @@
+resource "aws_instance" "{<vm_name>}" {
+  ami           = "{<ami>}"
+  key_name   = "${aws_key_pair.vm_key.key_name}"
+  instance_type = "t2.medium"
+  #vpc_security_group_ids      = [ "${aws_default_security_group.security-group.id}" ]
+  subnet_id                   = "${aws_default_subnet.subnet-a.id}"
+  associate_public_ip_address = true
+  user_data                   = <<EOF
+  #!/bin/sh
+    sudo {<package_manager>} update
+    sudo {<package_manager>} install -y python   
+    EOF
+}
+

@@ -1,0 +1,9 @@
+dn: cn=config
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/ldap/ssl/cacert.pem
+-
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/ldap/ssl/ldap01_slapd_cert.pem
+-
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/ldap/ssl/ldap01_slapd_key.pem

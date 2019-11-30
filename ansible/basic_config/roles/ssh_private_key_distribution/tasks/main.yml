@@ -1,0 +1,21 @@
+---
+- name: copy private ssh key to VM
+  become: yes
+  copy:  
+      #src: "{{ hostvars[inventory_hostname].ssh_private_key }}"
+      src: "{{ item.src}}"
+      dest: "{{ hostvars[inventory_hostname].home_dir }}/.ssh/{{ item.dest }}"
+      owner: "{{ username }}"
+      group: "{{ username }}"
+      mode: 0600
+  with_items:
+      - "{{ hostvars[inventory_hostname].ssh_other_keys }}"
+
+- name: add private ssh key to /etc/ssh/ssh_config
+  become: yes
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    line: "IdentityFile ~/.ssh/vm_priv_ssh_key"
+    regexp: "vm_priv_ssh_key"
+    state:  present
+    insertafter:  EOF

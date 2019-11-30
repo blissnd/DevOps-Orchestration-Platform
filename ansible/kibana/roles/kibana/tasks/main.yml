@@ -1,0 +1,74 @@
+---
+- name: Install apt key for elasticsearch
+  become: yes
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+  
+- name: Configure apt repo
+  become: yes
+  yum_repository:
+    name: kibana-6.x
+    description: Kibana repository for 6.x packages
+    baseurl: https://artifacts.elastic.co/packages/6.x/yum
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Install deb key for elasticsearch
+  become: yes
+  apt_key:
+    state: present
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+  
+- name: Configure apt repo
+  become: yes
+  apt_repository:        
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    state: present 
+    validate_certs: no
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+  
+- name: Install kibana
+  become: yes
+  yum:
+    name: kibana
+    state: present
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+  
+- name: Install kibana
+  become: yes
+  apt:
+    name: kibana
+    state: present
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: Allow connections from remote hosts
+  become: yes
+  lineinfile:
+    path: "/etc/kibana/kibana.yml"
+    regexp: '.*server.host\:.*'
+    line: 'server.host: "0.0.0.0"'
+
+- name: Connect to  ElasticSearch
+  become: yes
+  lineinfile:
+    path: "/etc/kibana/kibana.yml"
+    regexp: '.*elasticsearch.url\:.*'
+    line: 'elasticsearch.url: "http://localhost:9200"'
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Start kibana service
+  become: yes
+  service:
+    name: kibana
+    state: restarted
+

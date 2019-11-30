@@ -1,0 +1,5 @@
+preferences {
+    font_family = "'Source Code Pro', monospace"
+    user_css = "https://fonts.googleapis.com/css?family=Source+Code+Pro"
+}
+

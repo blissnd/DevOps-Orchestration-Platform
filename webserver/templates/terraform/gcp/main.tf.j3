@@ -1,0 +1,78 @@
+provider "google" {
+  credentials = "${file("../../gcp_credentials.json")}"
+  project = "{<project_id>}"
+  region = "{<region>}"
+}
+
+#resource "google_project" "my-proj" {
+# name            = "{<project_id>}"
+# project_id      = "{<project_id>}"
+ 
+ #name            = "ndb-test"
+ #project_id      = "ndb-test"
+#}
+ 
+resource "google_compute_instance" "{<vm_name>}" {
+   name = "{<vm_name>}"
+   machine_type = "n1-standard-2"
+   zone = "{<region>}-{<AZ>}"
+   boot_disk {
+      initialize_params {
+      image = "{<os_image>}"
+      }
+    }
+
+  network_interface {
+     network = "default"
+     #network = "${google_compute_network.default.self_link}"
+     access_config {}
+  }
+  
+  metadata = {
+    sshKeys = "{<user_id>}:${file("./gcp_key.pub")}"
+  }
+  
+  metadata_startup_script = "VM_NAME={<vm_name>}\n${file("../../bootstrap.sh")}"
+}
+
+#resource "google_compute_firewall" "default-fw" {
+#  name    = "allow-ssh-and-icmp"
+#  #network = "${google_compute_network.default.self_link}"
+#  network = "default"
+  
+#  allow {
+#    protocol = "icmp"
+#  }
+
+#  allow {
+#    protocol = "tcp"
+#    {<firewall_section>}
+#  }
+#}
+
+#service_account {
+#  scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+#}
+
+#resource "google_project_services" "my-proj" {
+# project = "${google_project.my-proj.project_id}"
+# services = [
+#   "compute.googleapis.com"
+# ]
+#}
+
+output "public_ip" {
+   value = "${google_compute_instance.{<vm_name>}.network_interface.0.access_config.0.nat_ip}"
+}
+
+output "private_ip" {
+   value = "${google_compute_instance.{<vm_name>}.network_interface.0.network_ip}"
+}
+
+output "instance_id" {
+    value = "${google_compute_instance.{<vm_name>}.self_link}"
+}
+
+output "metadata" {
+   value = "${google_compute_instance.{<vm_name>}.metadata}"
+}

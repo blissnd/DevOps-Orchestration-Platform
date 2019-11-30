@@ -1,0 +1,4 @@
+sudo /usr/sbin/sshd
+
+sudo service ssh start
+tail -f /dev/null

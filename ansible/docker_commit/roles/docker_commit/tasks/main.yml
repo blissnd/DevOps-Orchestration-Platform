@@ -1,0 +1,12 @@
+---
+- name: commit changes to local docker image and tag with registry
+  become: yes
+  shell: "docker commit {{ hostvars[inventory_hostname].vm_name }}--{{ hostvars[inventory_hostname].container_name }} {{ hostvars[inventory_hostname].nexus_registry_dns }}:18444/{{ hostvars[inventory_hostname].image_name }}"
+ 
+- name: docker login
+  become: yes
+  shell: "docker login --username admin --password {{ hostvars[inventory_hostname].nexus_admin_password }} {{ hostvars[inventory_hostname].nexus_registry_dns }}:18444"
+   
+- name: commit changes to nexus registry
+  become: yes
+  shell: "docker push {{ hostvars[inventory_hostname].nexus_registry_dns }}:18444/{{ hostvars[inventory_hostname].image_name }}"

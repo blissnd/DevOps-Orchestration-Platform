@@ -1,0 +1,231 @@
+---
+### Ubuntu ###
+
+- name: install unzip
+  become:   yes
+  apt:
+    name=unzip
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: install npm
+  become:   yes
+  apt:
+    name=npm
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+ 
+- name: store output of lsb_release
+  become:   yes
+  shell:  lsb_release -cs
+  register: lsb_release_output
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: Add an apt key by id from a keyserver
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 9DA31620334BD75D9DCB49F368818C72E52529D4
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+      
+- name: add correct apt repo
+  become: yes
+  apt_repository:
+    repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse {{lsb_release_output.stdout}} stable
+    state: present
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+ 
+- name: install mongodb-org
+  become:   yes
+  apt:
+    name=mongodb-org
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: Ensure mongo daemon is running
+  become: yes
+  service:
+    name: mongod
+    state: started
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: install nodejs
+  become: yes
+  apt:
+    name=nodejs
+    state=latest
+    update_cache=yes
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: install nodejs-legacy
+  become: yes
+  apt:
+    name=nodejs-legacy
+    state=latest
+    update_cache=yes
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+
+####################################################
+
+### RedHat ###
+
+- name: install unzip
+  become: yes
+  yum:
+    name: unzip
+    state: latest
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+ 
+- name: Create /etc/yum.repos.d/mongodb-org-4.0.repo file
+  become: yes
+  template:
+    src: mongodb-org-4.0.repo.j2
+    dest: /etc/yum.repos.d/mongodb-org-4.0.repo
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+     
+- name: install mongodb-org
+  become: yes
+  yum:
+    name: mongodb-org
+    state: latest
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+ 
+- name: Ensure mongo daemon is running
+  become: yes
+  service:
+    name: mongod
+    state: started
+  when:
+      hostvars[inventory_hostname].os_name =="centos"
+
+- name: Prepare to install npm
+  become: yes
+  shell: curl -sL https://rpm.nodesource.com/setup_8.x | sudo bash -
+  when: hostvars[inventory_hostname].os_name =="centos"
+  
+- name: install nodejs
+  become: yes
+  yum:
+    name: nodejs
+    state: latest
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+ 
+################# Install GUI ###################################
+
+- name: Create mongo gui dir
+  become: yes
+  file:
+    path: "{{ hostvars[inventory_hostname].home_dir }}/mongo_gui"
+    state: directory
+    mode: 0755
+
+- name: Install npm dependencies
+  become: yes
+  shell: npm install -g mongo-express
+  args:
+    chdir: "{{ hostvars[inventory_hostname].home_dir }}/mongo_gui"
+  
+#################### Configure GUI on Ubuntu ###################################
+
+- name: rename config file
+  become: yes
+  copy:
+    src: "/usr/local/lib/node_modules/mongo-express/config.default.js"
+    dest: "/usr/local/lib/node_modules/mongo-express/config.js"
+    remote_src: yes
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+    
+- name: allow listen on all net interfaces
+  become: yes
+  replace:
+    path: "/usr/local/lib/node_modules/mongo-express/config.js"
+    regexp: '(.*)localhost(.*)'
+    replace: '\g<1>0.0.0.0\g<2>'
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+    
+- name: change listen port to 8031
+  become: yes
+  replace:
+    path: "/usr/local/lib/node_modules/mongo-express/config.js"
+    regexp: '(.*)8081(.*)'
+    replace: '\g<1>8031\g<2>'
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+
+- name: Copy service template across
+  become: yes
+  template:
+    src: mongo-express.service_ubuntu.j2
+    dest: /etc/systemd/system/mongo-express.service
+    mode: 0755
+  when:
+    hostvars[inventory_hostname].os_name == "ubuntu"
+      
+#################### Configure GUI on RedHat ###################################
+
+
+- name: rename config file
+  become: yes
+  copy:
+    src: "/usr/lib/node_modules/mongo-express/config.default.js"
+    dest: "/usr/lib/node_modules/mongo-express/config.js"
+    remote_src: yes
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+    
+- name: allow listen on all net interfaces
+  become: yes
+  replace:
+    path: "/usr/lib/node_modules/mongo-express/config.js"
+    regexp: '(.*)localhost(.*)'
+    replace: '\g<1>0.0.0.0\g<2>'
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+    
+- name: change listen port to 8031
+  become: yes
+  replace:
+    path: "/usr/lib/node_modules/mongo-express/config.js"
+    regexp: '(.*)8081(.*)'
+    replace: '\g<1>8031\g<2>'
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+
+- name: Copy service template across
+  become: yes
+  template:
+    src: mongo-express.service_centos.j2
+    dest: /etc/systemd/system/mongo-express.service
+    mode: 0755
+  when:
+    hostvars[inventory_hostname].os_name == "centos"
+    
+################################################################################
+    
+- name: Reload mongo-express
+  become: yes
+  service:
+    name: mongo-express
+    state: started
+
+################################################################################
+
+

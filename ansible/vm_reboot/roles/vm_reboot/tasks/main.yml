@@ -1,0 +1,4 @@
+- name: Shutdown VM
+  become: yes
+  shell: reboot
+

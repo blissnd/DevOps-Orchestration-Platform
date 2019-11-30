@@ -1,0 +1,25 @@
+<html>
+
+<h2 align="center">GCP Access Key Configuration</h2>
+
+<h4>Paste key file from Google Cloud</h4><BR>
+
+<form id="form_0" action="/gcp_key_access/" method="POST">
+
+		<h4 style="color: green">Google Cloud Project ID</h4>
+
+		<input form="form_0" style="font-size : 12px; padding: 0.4em;" type="password" size="50" placeholder="Enter Google Project ID..." name="gcp_project_id" value="{{.GCP_Project}}" required>
+
+		<BR><BR><BR>
+
+		<h4 style="color: green">Google Cloud JSON Key File</h4>
+
+		<textarea rows="5" cols="50" wrap="off" form="form_0" name="gcp_key_file_string" placeholder="Paste Google Cloud JSON key file here..." required>{{.GCP_Json_key}}</textarea>
+
+		<BR><BR><BR>
+		
+		<input form="form_0" type="submit" style="font-size : 12px; padding: 0.4em;" size="3" name="gcp_key_submit" value="Submit">
+
+</form>
+
+</html>

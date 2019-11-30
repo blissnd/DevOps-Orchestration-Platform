@@ -1,0 +1,22 @@
+---  
+- name: install java
+  become:   yes
+  apt:
+    name=openjdk-8-jdk-headless
+    state=latest
+    update_cache=yes
+  when:
+      hostvars[inventory_hostname].os_name == "ubuntu"
+
+#################### RedHat #########################
+
+- name: install java
+  become: yes
+  yum:
+    name: java
+    state: latest
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+      
+####################################################
+

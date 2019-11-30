@@ -1,0 +1,56 @@
+---
+- name: Install rpm key for logstash
+  become: yes
+  apt_key:
+    state: present
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: install apt-transport-https
+  become: yes
+  apt:
+    name: apt-transport-https
+    state: latest
+  
+- name: Configure apt repo
+  become: yes
+  apt_repository:    
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    state: present 
+    validate_certs: no
+
+- name: Install Java
+  become: yes
+  apt:
+    name: default-jdk
+    state: present
+    
+- name: Install logstash
+  become: yes
+  apt:
+    name: logstash
+    state: present
+
+- name: Copy logstash systemd service template across
+  become: yes
+  template:
+    src: logstash.service.j2
+    dest: /lib/systemd/system/logstash.service
+
+- name: Copy pipeline template across
+  become: yes
+  template:
+    src: pipeline.yml.j2
+    dest: /etc/logstash/conf.d/pipeline.yml
+
+- name: Copy logstash-sample.conf to correct remote destination directory
+  become: yes
+  copy:
+    src: /etc/logstash/logstash-sample.conf
+    dest: /etc/logstash/conf.d/logstash-sample.conf
+    remote_src: yes
+
+- name: Start logstash
+  become: yes
+  service:
+    name: logstash
+    state: started

@@ -1,0 +1,17 @@
+FROM ubuntu:16.04
+
+RUN apt-get update
+RUN apt-get install -y sudo
+RUN sudo apt-get install -y python
+RUN sudo apt-get install -y ssh
+RUN sudo apt-get install -y net-tools
+
+RUN sudo useradd -ms /bin/bash vagrant
+
+COPY .ssh/authorized_keys /home/vagrant/.ssh/
+COPY ./docker_script.sh	 /home/vagrant/
+
+RUN sudo chown vagrant:vagrant /home/vagrant/.ssh/*
+
+WORKDIR /home/vagrant
+

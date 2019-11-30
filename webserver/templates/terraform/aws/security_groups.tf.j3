@@ -1,0 +1,26 @@
+provider "aws" {
+  region = "{<region>}"
+  shared_credentials_file = "../aws_bootstrap/aws_credentials"
+}
+
+
+resource "aws_default_vpc" "default_vpc" {
+  
+}
+
+resource "aws_route_table" "subnet-route-table" {
+  vpc_id = "${aws_default_vpc.default_vpc.id}"
+}
+
+resource "aws_default_security_group" "security-group" {
+  vpc_id      = "${aws_default_vpc.default_vpc.id}"
+
+  {<firewall_section>}
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

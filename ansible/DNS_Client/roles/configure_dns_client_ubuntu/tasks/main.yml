@@ -1,0 +1,76 @@
+---
+############ Configure DNS Clients #################
+
+- name: Edit /etc/network/interfaces
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces
+    regexp: 'dns-nameservers.*'
+    line: 'dns-nameservers {{ hostvars[inventory_hostname].server }} 8.8.8.8'
+  when:
+      hostvars[inventory_hostname].platform_type == "virtualbox"
+    
+- name: Edit /etc/network/interfaces
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces
+    regexp: 'dns-search.*'
+    line: 'dns-search {{ hostvars[inventory_hostname].fqdn }}'
+  when:
+      hostvars[inventory_hostname].platform_type == "virtualbox"
+      
+###
+
+- name: Edit /etc/network/interfaces.d/50-cloud-init.cfg
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    regexp: 'dns-nameservers.*'
+    line: 'dns-nameservers {{ hostvars[inventory_hostname].server }} 8.8.8.8'
+  when:
+      hostvars[inventory_hostname].platform_type != "virtualbox"
+    
+- name: Edit /etc/network/interfaces.d/50-cloud-init.cfg
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    regexp: 'dns-search.*'
+    line: 'dns-search {{ hostvars[inventory_hostname].fqdn }}'
+  when:
+      hostvars[inventory_hostname].platform_type != "virtualbox"
+      
+ ###
+ 
+- name: restart networking
+  become: yes
+  service:
+    name: networking
+    enabled: yes
+    state:  restarted
+
+##########################
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver {{ hostvars[inventory_hostname].server }}'
+    insertbefore: BOF
+    line: 'nameserver {{ hostvars[inventory_hostname].server }}'
+  
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver 10.0.*'
+    state: absent
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '.*nameserver 169.254.169.254'
+    line: '#nameserver 169.254.169.254'
+      
+##########################
+

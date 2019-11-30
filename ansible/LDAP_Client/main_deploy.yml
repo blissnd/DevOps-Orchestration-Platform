@@ -1,0 +1,10 @@
+---
+-   hosts:
+      - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:
+      - { role: 'centos_ldap_client_pam', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+      - { role: 'centos_ldap_client_security', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+      
+      - { role: 'ubuntu_ldap_client_pam', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }
+      - { role: 'ubuntu_ldap_client_security', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }

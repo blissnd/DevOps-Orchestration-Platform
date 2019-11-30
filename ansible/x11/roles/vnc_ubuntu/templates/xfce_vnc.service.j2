@@ -1,0 +1,13 @@
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=forking
+#Environment=DISPLAY=:1
+ExecStart=/bin/bash "/opt/vnc_startup_xfce.sh"
+User={{ hostvars[inventory_hostname].username }}
+Group={{ hostvars[inventory_hostname].username }}
+
+[Install]
+WantedBy=multi-user.target

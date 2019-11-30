@@ -1,0 +1,28 @@
+# nano db.ldif
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: {{ hostvars[inventory_hostname].ldap_dn }}
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN:  cn=ldapadm,{{ hostvars[inventory_hostname].ldap_dn }}
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}TVZFHotiE6XXQG9iZlm4jkPhSgFoN/aA
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: to attrs=userPassword
+        by self =xw
+        by anonymous auth
+        by * none
+olcAccess: to *
+        by self write
+        by users read
+

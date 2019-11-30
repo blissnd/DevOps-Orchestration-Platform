@@ -1,0 +1,255 @@
+<html>
+<title>{{.Title}}</title>
+<h1>{{.Title}}</h1>
+
+<script type="text/javascript">
+    var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    if (is_chrome) {
+      document.write('<link rel="stylesheet" href="/css/chrome.css" type="text/css" />');
+    } else {
+      document.write('<link rel="stylesheet" href="/css/firefox.css" type="text/css" />');
+    }
+</script>
+
+<link rel="stylesheet" href="/css/custom_fonts.css" type="text/css" />
+
+<table id="top_table" border="1" padding="1">
+	<thead>
+  <tr>
+		<th>Security Group ID</th>
+		<th>Region</th>
+		<th>Source IP CIDR</th>
+		<th>Protocol</th>
+		<th>Port</th>
+	</tr>
+	</thead>
+  
+ <tbody id="top_table_body">
+  </tbody>
+</table>
+
+<BR><BR><hr style="border-top: 1px solid #0000ff;">
+
+<div id="vm_info_section"></div>
+
+<script src="/js/libs/jquery.min.js"></script>
+
+<script>
+    
+	$(document).ready(function() {
+    
+    var current_id = 1    
+    var html_row = ""
+    var firewall_id = ""
+    
+    html_row += "<tr id=\"vm_table_row\">"
+    html_row += "<form id=\"form_0\" action=\"/aws_hypervisor_security/\" method=\"POST\">"
+    
+    html_row += "<td>"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"text\" name=\"firewall_id\" value=\"default\" id=\"firewall_id\"" + current_id + "\">"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"hidden\" name=\"state\" value=\"CLOSED\" id=\"state\"" + current_id + "\">"
+    html_row += "</td>"
+    
+    html_row += "<td>"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"text\" name=\"region\" value=\"eu-west-1\" id=\"region\"" + current_id + "\">"        
+    html_row += "</td>"
+
+    html_row += "<td>"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"text\" placeholder=\"Enter Source IP CIDR\" name=\"source_cidr\" value=\"0.0.0.0/0\" required>"
+    html_row += "</td>"
+    
+	  html_row += "<td>"
+		html_row += "<select class=\"custom_text_button\" form=\"form_0\" name=\"protocol\" style=\"font-size: 12px;padding: 0.4em;\">"
+		html_row += "<option value=\"UDP\">UDP</option>"
+		html_row += "<option value=\"TCP\">TCP</option>"
+		html_row += "</select>"
+		html_row += "</td>"
+
+    html_row += "<td>"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"text\" placeholder=\"Enter Port\" name=\"port\" required>"
+    html_row += "</td>"
+    
+    html_row += "<td>"
+    html_row += "<input form=\"form_0\" class=\"custom_text_button\" type=\"submit\" name=\"Add Rule\" value=\"Add Rule\">"
+    html_row += "</td>"
+    
+    html_row += "</form>"
+    html_row += "</tr>"
+
+    $('#top_table_body').append(html_row);    
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    var html_row = ""              
+    
+    html_row += "<table id=\"info_table\" border=\"1\" padding=\"1\">"
+    html_row += "<thead>"
+    html_row += "<tr>"
+    html_row += "<th>Security Group</th>"          
+    html_row += "<th>Source IP CIDR</th>"
+    html_row += "<th>Protocol</th>"
+    html_row += "<th>Port</th>"
+    html_row += "</tr>"
+    html_row += "</thead>"
+    
+    html_row += "<tbody id=\"info_table_body\">"
+    html_row += "</tbody>"
+    html_row += "</table>"
+    
+    $('#vm_info_section').append(html_row);
+	
+  	get_info_tables_contents();   
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    
+    function get_info_tables_contents() {
+    
+      $.ajax({
+          url: '/get_aws_firewall_map_ajax/',
+          type: 'post',
+          dataType: 'json',
+          //data : {log_path: log_path, log_position: current_log_position},
+          success : function(data) {
+          
+            var current_id = 1            
+            
+            $.each(data, function(firewall_id, firewall_map) {
+              $.each(firewall_map, function(firewall_rule_id, firewall_rule_map) {              
+                var html_row = ""
+                
+                html_row += "<tr id=\"info_table_row_" + firewall_id + "\">\n" 
+                
+                html_row += "<form id=\"form_" + current_id + "\" action=\"/aws_hypervisor_security/\" target=\"\"  method=\"POST\">\n"
+                
+                html_row += "<td>"
+                html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_id + "\" id=\"firewall_id_display_" + current_id + "\" name=\"firewall_id_display\" disabled>"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_id + "\" id=\"firewall_id_" + current_id + "\" name=\"firewall_id\">"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_id + "\" id=\"firewall_rule_id_" + current_id + "\" name=\"firewall_rule_id\">"
+                html_row += "</td>\n"                                
+                
+                html_row += "<td>"
+                html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["source_cidr"] + "\" name=\"source_cidr_display\" disabled>"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["source_cidr"] + "\" id=\"source_cidr_" + current_id + "\" name=\"source_cidr\">"
+                html_row += "</td>\n"
+                
+                html_row += "<td>"
+                html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["protocol"] + "\" name=\"protocol_display\" readonly>"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["protocol"] + "\" id=\"protocol_" + current_id + "\" name=\"protocol\">"
+                html_row += "</td>\n"
+
+                html_row += "<td>"
+                html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"text\" value=\"" + firewall_rule_map["port"] + "\" name=\"port_display\" readonly>"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"" + firewall_rule_map["port"] + "\" id=\"port_" + current_id + "\" name=\"port\">"
+                html_row += "</td>\n"
+                
+                html_row += "<td bgcolor=\"#FFFFFF\" id=\"button_hypervisor_td_" + current_id + "\" align=\"center\">"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_hypervisor_" + current_id + "\" class=\"custom_text_button\"  name=\"button_hypervisor\" value=\"      " + firewall_rule_map["state"] + "      \">"
+                
+                html_row += "<img id=\"hypervisor_wait_image_" + current_id + "\" src=\"/css/ajax-loader.gif\" />"
+                html_row += "<div id =\"hypervisor_error_indicator_" + current_id + "\"></div>"
+                html_row += "</td>\n"
+                
+                html_row += "<td>"            
+                html_row += "<input form=\"form_" + current_id + "\" type=\"submit\" id=\"button_delete_" + current_id + "\" name=\"button_delete\" class=\"custom_text_button\" value=\"Delete\" >"
+                html_row += "</td>\n"
+                
+                html_row += "<td>"
+                html_row += "<input form=\"form_" + current_id + "\" type=\"hidden\" value=\"{{.LogPath}}_" + firewall_rule_id + ".log\" id=\"log_path_" + current_id + "\" name=\"log_path\">"
+                html_row += "<input form=\"form_" + current_id + "\" class=\"custom_text_button\"  type=\"submit\" id=\"button_log_" + current_id + "\" name=\"button_log\"  value=\"Get Log\" >"
+                html_row += "</td>\n"
+                
+                html_row += "</form>\n"
+                html_row += "</tr>\n"
+                
+                $('#info_table_body').append(html_row);
+                $("#hypervisor_wait_image_" + current_id).hide()
+                
+                ///////////////// 
+                
+                $("#button_hypervisor_" +  current_id).click(function(event) {
+                
+                  var form_id = $(this).attr("form");
+                  //document.getElementById(form_id).action = "/aws_security/";
+                  //document.getElementById(form_id).target = "";
+                  //document.getElementById(form_id).submit();
+                  
+                  // AJAX Implementation
+                  var row_id = form_id.substring(5)                  
+
+                  $("#button_hypervisor_" + row_id).hide()
+                  $("#hypervisor_wait_image_" + row_id).show()
+                  
+                  var firewall_id = $("#firewall_id_" + row_id).val()
+                  var source_cidr = $("#source_cidr_" + row_id).val()
+                  var protocol = $("#protocol_" + row_id).val()
+                  var port = $("#port_" + row_id).val()
+                  var port_state = $("#button_hypervisor_" + row_id).val()
+                  var log_path = $("#log_path_" + row_id).val()
+                  
+                  var webform_obj = {  	firewall_id: firewall_id,
+                                        source_cidr: source_cidr,
+                                        port: port,
+                                        protocol: protocol,
+                                        log_path: log_path,
+                                        firewall_type: "hypervisor",
+                                        platform: "aws",
+                                        port_state: port_state.trim()
+                                     };
+                  
+                  var webform_json = JSON.stringify(webform_obj)                                      
+                  
+                  $.ajax({
+                    url: '/ajax_aws_modify_hypervisor_firewall/',
+                    type: 'post',
+                    dataType: 'json',
+                    data : webform_obj,
+                    
+                    success : function(data) {                
+                      
+                      $("#button_hypervisor_" + row_id).show()
+                      $("#hypervisor_wait_image_" + row_id).hide()
+                      
+                      if (data["result"] == "pass") {
+                        if ($("#button_hypervisor_" + row_id).val().trim() == "CLOSED") {
+                          $("#button_hypervisor_" + row_id).val("     OPEN     ")
+                        } else {
+                          $("#button_hypervisor_" + row_id).val("   CLOSED   ")
+                        }
+                        $("#button_hypervisor_td_" + row_id).attr("bgcolor", "#FFFFFF");
+                                                                        
+                      } else {
+                        $("#button_hypervisor_td_" + row_id).attr("bgcolor", "#FF0000");
+                      }
+                      
+                      event.preventDefault();
+                    }
+                  });
+                  
+                  event.preventDefault();
+                });                               
+                
+                $("#button_delete_" +  current_id).click(function() {
+                  var form_id = $(this).attr("form");
+                  document.getElementById(form_id).action = "/aws_hypervisor_security/";
+                  document.getElementById(form_id).target = ""; 
+                  document.getElementById(form_id).submit();
+                });
+                
+                $("#button_log_" +  current_id).click(function() {
+                  var form_id = $(this).attr("form");
+                  document.getElementById(form_id).action = "/get_generic_security_log/";
+                  document.getElementById(form_id).target = "_blank"; 
+                  document.getElementById(form_id).submit();
+                });
+                
+                current_id += 1
+              });
+            });           
+          },
+      }); 
+    }
+	});
+  
+</script>
+
+</html>

@@ -1,0 +1,4 @@
+sudo docker login {<docker_login_string>}
+
+sudo docker run --name {<vm_name>}--{<docker_container_name>} -it -d {<port_section>} {<nexus_registry_section>} bash docker_bootstrap_script.sh
+

@@ -1,0 +1,21 @@
+;
+; BIND data file for local loopback interface
+;
+$TTL	604800
+@	IN	SOA	{{ hostvars[inventory_hostname].vm_name }}.{{ hostvars[inventory_hostname].fqdn }}. admin.{{ hostvars[inventory_hostname].fqdn }}. (
+			      3		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+; name servers - NS records
+    IN      NS     {{ hostvars[inventory_hostname].vm_name }}.{{ hostvars[inventory_hostname].fqdn }}.
+
+; name servers - A records
+{{ hostvars[inventory_hostname].vm_name }}.{{ hostvars[inventory_hostname].fqdn }}.          IN      A       {{ hostvars[inventory_hostname].ip_address }}
+
+; {{ hostvars[inventory_hostname].ip_address_part_1 }}.{{ hostvars[inventory_hostname].ip_address_part_2 }}.0.0/16 - A records
+{% for host in hostvars[inventory_hostname].other_hosts %}
+{{ host.vm_name }}.{{ host.fqdn }}.          IN      A       {{ host.ip_address }}
+{% endfor %}

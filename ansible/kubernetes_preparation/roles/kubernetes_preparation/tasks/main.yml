@@ -1,0 +1,151 @@
+---
+- name: start docker
+  become: yes
+  service:
+    name: docker
+    state: restarted
+
+### Centos ###
+- name: Install kubernetes repos on centos
+  become: yes
+  template:
+    src: kubernetes.repo_centos.j2
+    dest: /etc/yum.repos.d/kubernetes.repo
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Configure /etc/sysctl.d/k8s.conf
+  become: yes
+  template:
+    src: k8s.conf.j2
+    dest: /etc/sysctl.d/k8s.conf
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+  
+- name: Configure k8s.conf (2)
+  become: yes
+  shell: sysctl --system
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+
+- name: Disable selinux
+  become: yes
+  shell: setenforce 0
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+  
+- name: Configure selinux to permissive
+  become: yes
+  replace:
+    path: /etc/selinux/config
+    regexp: '^SELINUX=enforcing'
+    replace: 'SELINUX=permissive'
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+  
+- name: Install kubelet kubeadm kubectl 
+  become: yes
+  shell: yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+  when:
+      hostvars[inventory_hostname].os_name == "centos"
+###
+
+### Ubuntu ###
+- name: Install apt-transport-https
+  become: yes
+  apt:
+    name: apt-transport-https
+    state: latest    
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+
+- name: Add an apt signing key
+  become: yes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+  
+- name: Add repo for kubernetes
+  become: yes
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"   
+    state: present
+    validate_certs: no
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+    
+- name: Install kubelet
+  become: yes
+  apt:
+    name: kubelet
+    state: latest
+    allow_unauthenticated: yes
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+
+- name: Install kubeadm
+  become: yes
+  apt:
+    name: kubeadm
+    state: latest
+    allow_unauthenticated: yes
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+  
+- name: Install kubectl
+  become: yes
+  apt:
+    name: kubectl
+    state: latest
+    allow_unauthenticated: yes
+  when: hostvars[inventory_hostname].os_name =="ubuntu"
+###
+
+- name: Switch off swap
+  become: yes
+  shell: swapoff -a
+
+- name: Start kubelet
+  become: yes
+  service:
+    name: kubelet
+    state: started
+
+- name: Reset kubeadm
+  become: yes
+  shell: kubeadm reset -f
+
+- name: Create network overlay config path (1)
+  become: yes
+  file:
+    path: /etc/cni
+    state: directory
+
+- name: Create network overlay config path (2)
+  become: yes
+  file:
+    path: /etc/cni/net.d
+    state: directory
+
+- name: Install weave
+  become: yes
+  shell: curl -L git.io/weave -o /usr/local/bin/weave
+
+- name: Set weave exec permission
+  become: yes
+  shell: chmod a+x /usr/local/bin/weave
+
+- name: Set-up Weave
+  become: yes
+  shell: /usr/local/bin/weave setup
+
+- name: Try to stop Weave in case already running
+  become: yes
+  shell: /usr/local/bin/weave stop
+
+- name: Launch Weave
+  become: yes
+  shell: /usr/local/bin/weave launch  
+
+- name: Peer weave to kubernetes agents
+  become: yes
+  shell: "/usr/local/bin/weave connect {{ item.ip_address }}"
+  with_items:
+      - "{{ hostvars[inventory_hostname].other_hosts }}"

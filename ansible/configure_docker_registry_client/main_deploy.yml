@@ -1,0 +1,7 @@
+---
+-   hosts:
+    - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:     
+      - configure_docker_registry_client
+ 

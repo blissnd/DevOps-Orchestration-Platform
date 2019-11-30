@@ -1,0 +1,6 @@
+curl -k -u admin:admin123 -X DELETE https://localhost:8443/service/rest/v1/script/docker
+
+curl -k -X POST -u admin:{{ default_admin_password }} --header 'Content-Type: application/json' https://127.0.0.1:8443/service/rest/v1/script -d '{"name":"docker","type":"groovy","content":"repository.createDockerHosted('\''docker-registry'\'', null, 18444)"}'
+
+curl -k -X POST -u admin:{{ default_admin_password }} --header "Content-Type: text/plain" 'https://127.0.0.1:8443/service/rest/v1/script/docker/run'
+

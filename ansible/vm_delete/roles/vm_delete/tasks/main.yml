@@ -1,0 +1,3 @@
+- name: Shutdown VM
+  become: yes
+  shell: shutdown now

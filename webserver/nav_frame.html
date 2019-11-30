@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="/js/libs/jquery.min.js"></script>
+
+<script>
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+if (is_chrome) {
+  document.write('<link rel="stylesheet" href="/css/chrome.css" type="text/css" />');
+} else {
+  document.write('<link rel="stylesheet" href="/css/firefox.css" type="text/css" />');
+}
+
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=0.8">
+<style>
+ul, #myUL {  
+  list-style-type: none;  
+}
+
+li {
+  padding-bottom: 8px;;
+}
+
+#myUL {
+  margin: 0;
+  padding: 8px;
+  padding-bottom: 4px;;
+}
+
+.caret {
+  cursor: pointer;
+  -webkit-user-select: none; /* Safari 3.1+ */
+  -moz-user-select: none; /* Firefox 2+ */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none;  
+}
+
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+  padding-bottom: 4px;;
+}
+
+.caret-down::before {
+  -ms-transform: rotate(90deg); /* IE 9 */
+  -webkit-transform: rotate(90deg); /* Safari */'
+  transform: rotate(90deg);
+  padding-bottom: 4px;;
+}
+
+.nested {
+  display: none;
+  padding-bottom: 8px;;
+}
+
+.active {
+  display: block;
+  padding-bottom: 2px;;
+}
+</style>
+</head>
+<body>
+
+<ul id="myUL" class="ndb">
+  <li><span class="caret"></span><a href="/aws_key_access/" target="operations_frame">AWS</a>
+    <ul id="aws_section" class="nested">
+      
+      <li><span class="caret"></span><a href="/aws/" target="operations_frame">Managed VMs</a>
+
+      	<ul id="aws_managed_vm_list_section" class="nested">
+          	
+          <div id="aws_managed_vm_list"></div>
+            
+        </ul>
+      </li>
+
+      <li><span class="caret"></span><a href="/aws_imported/" target="operations_frame">Imported VMs</a>
+
+      	<ul id="aws_imported_vm_list_section" class="nested">
+          	
+          <div id="aws_imported_vm_list"></div>
+            
+        </ul>
+      </li>
+      <li><a href="/aws_hypervisor_security/" target="operations_frame">AWS Security Groups</a></li>      
+    </ul>  
+
+  </li>
+  
+  <li><span class="caret"></span><a href="/gcp_key_access/" target="operations_frame">Google Cloud</a>
+    <ul  id="gcp_section"class="nested">
+      
+      <li><span class="caret"></span><a href="/gcp/" target="operations_frame">Managed VMs</a>
+
+      	<ul id="gcp_managed_vm_list_section" class="nested">
+          	
+          	<div id="gcp_managed_vm_list"></div>
+            
+        </ul>
+      </li>
+      <li><span class="caret"></span><a href="/gcp_imported/" target="operations_frame">Imported VMs</a>
+
+      	<ul id="gcp_imported_vm_list_section" class="nested">
+          	
+          	<div id="gcp_imported_vm_list"></div>
+            
+        </ul>
+      </li>
+      <li><a href="/gcp_hypervisor_security/" target="operations_frame">Google Security Groups</a></li>      
+    </ul>
+  </li>
+  
+  <li><span class="caret">VirtualBox</span>
+    <ul id="virtualbox_section" class="nested">      
+
+        <li><span class="caret"></span><a href="/virtualbox/" target="operations_frame">Virtual Machines</a>
+
+          <ul id="virtualbox_vm_list_section" class="nested">
+          	
+          	<div id="virtualbox_vm_list"></div>
+            
+          </ul>
+        </li>      
+    </ul>
+  </li>
+  
+  <li><span class="caret">Kubernetes</span>
+    <ul id="kubernetes_section" class="nested">      
+
+        <li> <!-- <span class="caret"> --> </span><a href="/kubernetes/" target="operations_frame">Kubernetes Cluster</a>
+
+          <ul id="kubernetes_list_section" class="nested">
+          	
+          	<div id="kubernetes_list"></div>
+            
+          </ul>
+        </li>      
+    </ul>
+  </li>
+
+</ul>
+
+<script>
+var toggler = document.getElementsByClassName("caret");
+var i;
+
+for (i = 0; i < toggler.length; i++) {
+  toggler[i].addEventListener("click", function() {
+    this.parentElement.querySelector(".nested").classList.toggle("active");
+    this.classList.toggle("caret-down");
+  });
+}
+</script>
+
+</body>
+
+<script src="/js/nav_frame_utils.js"></script>
+
+</html>
+

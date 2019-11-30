@@ -1,0 +1,34 @@
+---
+- name: Install rpm key for elasticsearch
+  become: yes
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Configure yum repo
+  become: yes
+  yum_repository:
+    name: elasticsearch-6.x
+    description: Elasticsearch repository for 6.x packages
+    baseurl: https://artifacts.elastic.co/packages/6.x/yum
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Install elasticsearch
+  become: yes
+  yum:
+    name: elasticsearch
+    state: present
+
+- name: Allow to listen to any host from any network
+  become: yes
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '.*network.host\:.*'
+    line: "network.host: 0.0.0.0"
+
+- name: Start elasticsearch service
+  become: yes
+  service:
+    name: elasticsearch
+    state: restarted
+

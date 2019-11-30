@@ -1,0 +1,8 @@
+---
+### Pull remotely generated keys back to local template directory ###
+
+- name: Pull remotely generated keys back to local template directory
+  fetch:
+    src: "{{ hostvars[inventory_hostname].home_dir }}/nexus_security/certificate.pem"
+    dest: ../configure_docker_registry_client/roles/configure_docker_registry_client/templates/certificate.crt.j2
+    flat: yes

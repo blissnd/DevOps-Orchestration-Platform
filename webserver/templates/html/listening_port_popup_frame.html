@@ -1,0 +1,52 @@
+<HTML>
+
+<table id="port_table" border="1" padding="1" table-layout="fixed">
+	<thead>
+  <tr>
+		<th>Protocol</th>
+		<th>Port</th>
+		<th>Process</th>    
+	</tr>
+	</thead>
+  
+  <tbody id="port_table_body">
+  </tbody>
+</table>
+
+<script src="/js/libs/jquery.min.js"></script>
+<script>
+    
+	$(document).ready(function() {
+
+		var webform_obj = window.opener.webform_obj;		
+		
+		$.ajax({
+	    url: '/ajax_get_listening_ports/',
+	    type: 'post',
+	    dataType: 'json',
+	    data : webform_obj,	    	    
+
+	    success : function(ajax_data) {	    	
+
+	    	var html_rows = ""
+
+		    $.each(ajax_data, function(row_key, row) {
+				
+					html_rows += "<tr>"
+
+					$.each(row, function(col_key, val) {
+						html_rows += "<td>" + val + "</td>"
+					});
+
+					html_rows += "</tr>"
+				});
+			
+				$('#port_table_body').append(html_rows)
+
+			    	//event.preventDefault();
+			},
+		});
+	});
+</script>
+
+</HTML>

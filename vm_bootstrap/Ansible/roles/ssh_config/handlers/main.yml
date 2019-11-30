@@ -1,0 +1,9 @@
+---
+- name: restart ssh
+  become:   yes
+  service:  name=ssh state=restarted
+  notify: place flag
+  
+- name: place flag
+  become:   yes
+  shell:    touch "{{home_dir}}/I_have_been_modified.txt"

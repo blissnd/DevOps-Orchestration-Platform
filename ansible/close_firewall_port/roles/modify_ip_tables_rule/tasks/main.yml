@@ -1,0 +1,13 @@
+---
+- name: copy close_firewall_port.sh.j2 template across
+  become: yes
+  template:
+    src: "close_firewall_port.sh.j2"
+    dest: "{{ hostvars[inventory_hostname].home_dir }}/close_firewall_port.sh"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: run iptables command
+  become: yes
+  shell: "{{ hostvars[inventory_hostname].home_dir }}/close_firewall_port.sh"

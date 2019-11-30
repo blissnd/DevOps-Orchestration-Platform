@@ -1,0 +1,163 @@
+---
+- name: install bind9
+  become: yes
+  apt:
+    name: bind9
+    state: latest
+    update_cache: yes
+    
+- name: install bind9utils
+  become: yes
+  apt:
+    name=bind9utils
+    state=latest
+    update_cache=yes
+    
+- name: install bind9-doc
+  become: yes
+  apt:
+    name=bind9-doc
+    state=latest
+    update_cache=yes
+  
+#- name: Edit /etc/systemd/system/bind9.service
+#  become: yes
+#  lineinfile:
+#    path: /etc/systemd/system/bind9.service
+#    regexp: 'ExecStart=/usr/sbin/named -f -u bind'
+#    line: 'ExecStart=/usr/sbin/named -f -u bind -4'
+    
+- name: enable bind9
+  become: yes
+  service:
+    name: bind9
+    enabled: yes
+    state:  restarted
+  
+- name: copy /etc/bind/named.conf.options across
+  become: yes
+  template:
+    src: "named.conf.options.j2"
+    dest: "/etc/bind/named.conf.options"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: copy /etc/bind/named.conf.local across
+  become: yes
+  template:
+    src: "ubuntu.named.conf.local.j2"
+    dest: "/etc/bind/named.conf.local"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: Create target directory /etc/bind/zones
+  become: yes
+  file:
+    path: /etc/bind/zones
+    state: directory
+    mode: 0755
+
+- name: copy db.local.j2 template across
+  become: yes
+  template:
+    src: "db.local.j2"
+    dest: "/etc/bind/zones/db.{{ hostvars[inventory_hostname].fqdn }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+- name: copy ubuntu.db.ip_address_part1.ip_address_part2.j2 template across
+  become: yes
+  template:
+    src: "ubuntu.db.ip_address_part1.ip_address_part2.j2"
+    dest: "/etc/bind/zones/db.{{ hostvars[inventory_hostname].ip_address_part_1 }}.{{ hostvars[inventory_hostname].ip_address_part_2 }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+    
+##########################
+
+- name: enable bind9
+  become: yes
+  service:
+    name: bind9
+    enabled: yes
+    state:  restarted
+
+############ Configure DNS Clients #################
+
+- name: Edit /etc/network/interfaces
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces
+    regexp: 'dns-nameservers.*'
+    line: 'dns-nameservers {{ hostvars[inventory_hostname].ip_address }} 8.8.8.8'
+  when:
+      hostvars[inventory_hostname].platform_type == "virtualbox"
+    
+- name: Edit /etc/network/interfaces
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces
+    regexp: 'dns-search.*'
+    line: 'dns-search {{ hostvars[inventory_hostname].fqdn }}'
+  when:
+      hostvars[inventory_hostname].platform_type == "virtualbox"
+
+###
+
+- name: Edit /etc/network/interfaces.d/50-cloud-init.cfg
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    regexp: 'dns-nameservers.*'
+    line: 'dns-nameservers {{ hostvars[inventory_hostname].ip_address }} 8.8.8.8'
+  when:
+      hostvars[inventory_hostname].platform_type != "virtualbox"
+    
+- name: Edit /etc/network/interfaces.d/50-cloud-init.cfg
+  become: yes
+  lineinfile:
+    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    regexp: 'dns-search.*'
+    line: 'dns-search {{ hostvars[inventory_hostname].fqdn }}'
+  when:
+      hostvars[inventory_hostname].platform_type != "virtualbox"
+      
+ ###
+    
+- name: restart networking
+  become: yes
+  service:
+    name: networking
+    enabled: yes
+    state:  restarted
+
+##########################
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver {{ hostvars[inventory_hostname].ip_address }}'
+    insertbefore: BOF
+    line: 'nameserver {{ hostvars[inventory_hostname].ip_address }}'
+  
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver 10.0.*'
+    state: absent
+
+- name:  Edit resolve.conf
+  become: yes
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '.*nameserver 169.254.169.254'
+    line: '#nameserver 169.254.169.254'
+  
+##########################
+

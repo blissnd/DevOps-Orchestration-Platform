@@ -1,0 +1,27 @@
+<HTML>
+
+<textarea id="kubernetes_token_text" rows="25" cols="90"></textarea>
+
+<script src="/js/libs/jquery.min.js"></script>
+<script>
+    
+	$(document).ready(function() {
+
+		var webform_obj = window.opener.webform_obj;		
+		
+		$.ajax({
+			url: "/get_kubernetes_dashboard_token_ajax/",
+			type: 'post',
+			dataType: 'json',
+			data : webform_obj,
+			
+			success : function(data) {			
+				
+				$('#kubernetes_token_text').html(data["kubernetes_dashboard_token"])
+			},
+		});
+	
+	});
+</script>
+
+</HTML>

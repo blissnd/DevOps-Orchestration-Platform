@@ -1,0 +1,15 @@
+[Unit]
+Description=prometheus service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/apps/prometheus-2.4.2.linux-amd64
+ExecStart=/opt/apps/prometheus-2.4.2.linux-amd64/start_prometheus.sh
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target
+

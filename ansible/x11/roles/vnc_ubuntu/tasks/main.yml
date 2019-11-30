@@ -1,0 +1,122 @@
+---
+- name: Install VNC Server
+  become: yes
+  apt:
+      #name: x11vnc
+    name: vnc4server
+    state: latest 
+    update_cache: yes
+
+- name: Install VNC Server
+  become: yes
+  apt:
+    name: x11vnc    
+    state: latest 
+    update_cache: yes
+
+- name: Copy VNC Login Service template across
+  become: yes
+  template:
+    src: x11vnc.service.j2 
+    dest: /etc/systemd/system/x11vnc.service
+    mode: 755
+
+- name: Copy VNC Service template across
+  become: yes
+  template:
+    src: x11vnc_2.service.j2 
+    dest: /etc/systemd/system/x11vnc_2.service
+    mode: 755
+
+- name: Copy VNC Service template across
+  become: yes
+  template:
+    src: xfce_vnc.service.j2 
+    dest: /etc/systemd/system/xfce_vnc.service
+    mode: 755
+    
+- name: Copy xfce start script across
+  become: yes
+  template:
+    src: vnc_startup_xfce.sh.j2
+    dest: /opt/vnc_startup_xfce.sh
+    mode: 0755
+    
+- name: Copy start scripts across
+  become: yes
+  template:
+    src: start_script_0.sh.j2
+    dest: /opt/start_script_0.sh
+    mode: 0755
+
+- name: Copy start scripts across
+  become: yes
+  template:
+    src: start_script_1.sh.j2
+    dest: /opt/start_script_1.sh
+    mode: 0755
+
+- name: Create .vnc directory
+  file:
+    path:  "/home/{{ hostvars[inventory_hostname].username }}/.vnc"
+    state: directory
+
+- name: Set VNC password
+  #become: yes
+  shell: "x11vnc -storepasswd vnc_user /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd"
+  #shell: "vncpasswd  /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd  <<< echo vnc_user"
+
+- name: Set vnc passwd file mode
+  shell: "chmod 0600 /home/{{ hostvars[inventory_hostname].username }}/.vnc/passwd"
+
+- name: Configure vnc xstartup
+  become: yes
+  lineinfile:
+    path:   /home/{{ hostvars[inventory_hostname].username }}/.vnc/xstartup
+    regexp: 'exec /usr/bin/startxfce4 &'
+    line: 'exec /usr/bin/startxfce4 &'
+  ignore_errors: yes
+
+- name: Export display
+  become: yes
+  shell: export DISPLAY=:1
+
+- name: Restart service
+  become: yes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: xfce_vnc
+    enabled: true
+
+- name: Configure vnc xstartup
+  become: yes
+  lineinfile:
+    path:   /home/{{ hostvars[inventory_hostname].username }}/.vnc/xstartup
+    regexp: 'exec /usr/bin/startxfce4 &'
+    line: 'exec /usr/bin/startxfce4 &'
+  ignore_errors: yes
+  
+- name: Restart service
+  become: yes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: xfce_vnc
+    enabled: true
+
+#- name: Restart service
+#  become: yes
+#  systemd:
+#    state: restarted
+#    daemon_reload: yes
+#    name: x11vnc
+#    enabled: true
+
+#- name: Restart service
+#  become: yes
+#  systemd:
+#    state: restarted
+#    daemon_reload: yes
+#    name: x11vnc_2
+#    enabled: true

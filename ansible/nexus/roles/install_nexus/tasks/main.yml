@@ -1,0 +1,37 @@
+---
+#- name: Download nexus zip file
+#  shell: curl -L https://download.sonatype.com/nexus/3/latest-unix.tar.gz > "/home/{{ hostvars[inventory_hostname].username }}/nexus.tar.gz"
+
+- name: Download nexus zip file
+  get_url:
+    url: https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+    dest: "/home/{{ hostvars[inventory_hostname].username }}/nexus.tar.gz"
+ 
+- name: Extract Nexus
+  shell: tar xf ./nexus.tar.gz
+  args:
+    chdir: "/home/{{ hostvars[inventory_hostname].username }}"
+ 
+- name: create /opt/nexus
+  become: yes
+  file:
+    path: /opt/nexus
+    state: directory
+    mode: 0755
+
+- name: create /opt/nexus/nexus3
+  become: yes
+  file:
+    path: /opt/nexus/nexus3
+    state: directory
+    mode: 0755
+    
+- name: copy latest nexus to /opt/nexus
+  become: yes
+  shell: cp -R /home/{{ hostvars[inventory_hostname].username }}/nexus-*/. /opt/nexus/nexus3/
+  ignore_errors: yes
+
+- name: copy sonatype-work to /opt/nexus
+  become: yes
+  shell: mv /home/{{ hostvars[inventory_hostname].username }}/sonatype-work /opt/nexus
+  ignore_errors: yes

@@ -1,0 +1,59 @@
+---
+- name: test
+  become: yes
+  shell: uname -a
+  register: command_result
+
+- name: store fact
+  set_fact:
+    kernel_stats: command_result.stdout
+
+- debug: msg="{{ command_result.stdout }}"
+
+- name: create apps dir
+  become: yes
+  file:
+    path: "/opt/apps"
+    state: directory
+
+- debug: msg="/opt/apps"
+
+- name: Download prometheus zip file
+  become: yes
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v2.4.2/prometheus-2.4.2.linux-amd64.tar.gz"
+    dest: "/opt/apps/prometheus.tar.gz"
+
+- name: Extract
+  become: yes
+  unarchive:
+    src: "/opt/apps/prometheus.tar.gz"
+    dest: "/opt/apps"
+    remote_src: yes
+
+- name: Copy prometheus config template across
+  become: yes
+  template:
+    src: prometheus.yml.j2
+    dest: "/opt/apps/prometheus-2.4.2.linux-amd64/prometheus.yml"
+
+- name: Copy prometheus systemd service template across
+  become: yes
+  template:
+    src: prometheus.service.j2
+    dest: /lib/systemd/system/prometheus.service
+
+- name: Copy start script template across
+  become: yes
+  template:
+    src: start_prometheus.sh.j2
+    dest: /opt/apps/prometheus-2.4.2.linux-amd64/start_prometheus.sh
+    mode: 0755
+
+- name: Start prometheus
+  become: yes
+  service:
+    name: prometheus
+    state: started
+
+

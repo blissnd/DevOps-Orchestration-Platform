@@ -1,0 +1,13 @@
+---
+-   hosts:
+      - masters
+    remote_user: "{{ hostvars[inventory_hostname].username }}"
+    roles:
+      - { role: 'centos_deploy_ldap', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+      - { role: 'centos_deploy_pam', when:  "hostvars[inventory_hostname].os_name == 'centos'" }
+      - { role: 'centos_security', when:  "hostvars[inventory_hostname].os_name == 'centos'"  }
+      
+      - { role: 'ubuntu_deploy_ldap', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }
+      - { role: 'ubuntu_deploy_pam', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'" }
+      - { role: 'ubuntu_security', when:  "hostvars[inventory_hostname].os_name == 'ubuntu'"  }
+  
