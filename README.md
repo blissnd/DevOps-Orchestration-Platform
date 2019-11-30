@@ -3,7 +3,7 @@ Bootstrap an entire IT infrastructure and deploy &amp; configure applications, f
 
 For documentation & examples, see: 
 
-	https://software-automation.com/?page_id=132
+	[DevOps Orchestration Platform](https://software-automation.com/?page_id=132)
 	
-	https://www.youtube.com/watch?v=yuCfdvAKZrw
+	[YouTube Video](https://www.youtube.com/watch?v=yuCfdvAKZrw)
 	
