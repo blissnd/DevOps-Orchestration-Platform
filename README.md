@@ -18,4 +18,4 @@ Usage:
 Navigate to <project_root>/webserver, then run:
   > ./build_and_run.sh
   
-Navigate to http://localhost with either Firefox or Chrome
+Go to http://localhost with either Firefox or Chrome
