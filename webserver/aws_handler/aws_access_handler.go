@@ -51,7 +51,9 @@ func AWS_access_handler(w http.ResponseWriter, r *http.Request) {
 	retrieved_aws_key_id := ""
 	retrieved_aws_secret_key_string := ""
 
-	target_directory := "../aws_bootstrap/"	
+	target_directory := "../aws_bootstrap/"
+	linux_command_line.Execute_command_line("mkdir -p " + target_directory)
+	
   template_directory := "./templates/cloud_vm_access_and_import/"
 
 	webform_map := kv_store.Create_from_Webform(r)

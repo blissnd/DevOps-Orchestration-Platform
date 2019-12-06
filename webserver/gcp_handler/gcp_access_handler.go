@@ -69,6 +69,8 @@ func GCP_access_handler(w http.ResponseWriter, r *http.Request) {
 	retrieved_gcp_json_key_file_string := ""
 
 	target_directory := "../gcp_bootstrap/"
+	linux_command_line.Execute_command_line("mkdir -p " + target_directory)
+	
 	target_directory_absolute_path, _ := filepath.Abs(target_directory)
   template_directory := "./templates/cloud_vm_access_and_import/"
 
