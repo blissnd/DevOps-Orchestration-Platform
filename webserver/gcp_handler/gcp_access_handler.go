@@ -71,6 +71,8 @@ func GCP_access_handler(w http.ResponseWriter, r *http.Request) {
 	target_directory := "../gcp_bootstrap/"
 	linux_command_line.Execute_command_line("mkdir -p " + target_directory)
 	
+	linux_command_line.Execute_command_line("cp " + "./templates/terraform/gcp/bootstrap.sh " + target_directory)
+	
 	target_directory_absolute_path, _ := filepath.Abs(target_directory)
   template_directory := "./templates/cloud_vm_access_and_import/"
 
@@ -98,7 +100,7 @@ func GCP_access_handler(w http.ResponseWriter, r *http.Request) {
 	  template_populator.Populate_gcp(template_buffer, webform_map, target_directory + "gce.ini")
 	}
 
-  linux_command_line.Execute_command_line("cp " + template_directory + "gce.py.j3 " + target_directory + "gce.py")
+  linux_command_line.Execute_command_line("cp " + template_directory + "gce.py.j3 " + target_directory + "gce.py")	
 
   if file_exists(target_directory + "gcp_project_id") {
   	retrieved_gcp_project_id = template_populator.Load_file_as_string(target_directory + "gcp_project_id")	
