@@ -240,5 +240,5 @@ func main() {
   http.HandleFunc("/get_generic_security_log/", general_utility_web_handler.Generic_security_log_web_handler)
   http.HandleFunc("/ajax_get_listening_ports/", general_utility_web_handler.Get_listening_ports)
   
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":6543", nil))
 }

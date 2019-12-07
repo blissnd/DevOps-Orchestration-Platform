@@ -46,8 +46,8 @@ func strip_cr_cf_from_string(input_string string) string {
 
 func AWS_access_handler(w http.ResponseWriter, r *http.Request) {
 	
-	title := "Configure AWS Access"
-	
+	title := "Configure AWS Access"	 
+	 
 	retrieved_aws_key_id := ""
 	retrieved_aws_secret_key_string := ""
 
@@ -57,7 +57,17 @@ func AWS_access_handler(w http.ResponseWriter, r *http.Request) {
   template_directory := "./templates/cloud_vm_access_and_import/"
 
 	webform_map := kv_store.Create_from_Webform(r)
-
+	
+	//###################################################
+	 _, route_button_import_keys_from_env := webform_map["aws_key_import"]
+	 //###################################################
+	 
+	if route_button_import_keys_from_env 	{
+		
+		webform_map["aws_secret_key_id"] = os.Getenv("AWS_ACCESS_KEY_ID")
+		webform_map["aws_secret_key"] = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	}
+	
 	if webform_map["aws_secret_key_id"] != "" || webform_map["aws_secret_key"] != "" {
 
 		template_buffer := template_populator.Load_file(template_directory + "aws_key_id.j3")
