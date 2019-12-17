@@ -1,3 +1,6 @@
+// Copyright: (c) 2019, Nathan Bliss / Sofware Automation Solutions Ltd
+// GNU General Public License v2
+
 $(document).ready(function() {	
 	
 	$('#ssh_window_button_close').click(function() {	  

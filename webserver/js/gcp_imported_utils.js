@@ -1,3 +1,6 @@
+// Copyright: (c) 2019, Nathan Bliss / Sofware Automation Solutions Ltd
+// GNU General Public License v2
+
 var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 if (is_chrome) {
   document.write('<link rel="stylesheet" href="/css/chrome.css" type="text/css" />');

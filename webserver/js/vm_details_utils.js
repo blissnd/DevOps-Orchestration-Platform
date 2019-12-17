@@ -1,3 +1,6 @@
+// Copyright: (c) 2019, Nathan Bliss / Sofware Automation Solutions Ltd
+// GNU General Public License v2
+
 function get_vm_list_for_all_platforms() {
 
 	$.ajax({
