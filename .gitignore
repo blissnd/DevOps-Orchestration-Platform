@@ -20,5 +20,5 @@ gcp_bootstrap/public_key
 *.retry
 aws_firewall
 gcp_firewall
-webserver/databases/*.json
 ansible/nexus/nexus_admin_password
+webserver/databases/master_map.json
