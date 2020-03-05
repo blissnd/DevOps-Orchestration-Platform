@@ -19,3 +19,8 @@ Navigate to <project_root>/webserver, then run:
   > ./build_and_run.sh
   
 Go to http://localhost:6543 with either Firefox or Chrome
+
+---
+IMPORTANT NOTE ABOUT VIRTUALBOX: Ensure that the IP address of the VirtualBox host network adapter (usually named 'vboxnet0') 
+ is not used as an IP address for any of the VMs and also ensure any chosen IP addresses for VirtualBox VMs are on the SAME SUBNET as vboxnet0.
+ 
