@@ -21,6 +21,10 @@ Navigate to <project_root>/webserver, then run:
 Go to http://localhost:6543 with either Firefox or Chrome
 
 ---
-IMPORTANT NOTE ABOUT VIRTUALBOX: Ensure that the IP address of the VirtualBox host network adapter (usually named 'vboxnet0') 
- is not used as an IP address for any of the VMs and also ensure any chosen IP addresses for VirtualBox VMs are on the SAME SUBNET as vboxnet0.
- 
+IMPORTANT NOTES ABOUT VIRTUALBOX
+=========================
+1. When using VirtualBox, the GoLang web server must be run as root:
+	
+	> sudo ./build_and_run.sh
+	
+2. Ensure that the IP address of the VirtualBox host network adapter (usually named 'vboxnet0') is not used as an IP address for any of the VMs and also ensure any chosen IP addresses for VirtualBox VMs are on the SAME SUBNET as vboxnet0.
