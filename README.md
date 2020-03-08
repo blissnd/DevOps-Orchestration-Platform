@@ -28,3 +28,11 @@ IMPORTANT NOTES ABOUT VIRTUALBOX
 	> sudo ./build_and_run.sh
 	
 2. Ensure that the IP address of the VirtualBox host network adapter (usually named 'vboxnet0') is not used as an IP address for any of the VMs and also ensure any chosen IP addresses for VirtualBox VMs are on the SAME SUBNET as vboxnet0.
+
+3. As VirtualBox requires two network adapters (e.g. NAT adapter on 10.0.2.15 & host adapter on 192.168.3/24), the following file currently needs to be manually modified by ssh'ing into all Kubernetes nodes including the master:
+
+/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+And include (example of virtualbox host adapter IP 192.168.3.5):
+
+Environment="KUBELET_EXTRA_ARGS=--node-ip=192.168.3.5
